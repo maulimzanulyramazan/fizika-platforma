@@ -29,7 +29,7 @@
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
 
-  <!-- КІРУ ЭКРАНЫ (LOGIN OVERLAY) -->
+  <!-- КІРУ ЖӘНЕ ТІРКЕЛУ ЭКРАНЫ -->
   <div id="login-screen" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-7 shadow-2xl fade-in">
       <div class="flex items-center gap-3 mb-6">
@@ -38,11 +38,24 @@
         </div>
         <div>
           <h2 class="text-xl font-extrabold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">FizikaLab 3D</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Платформаға кіру (Оқушы / Мұғалім)</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Интерактивті физика оқыту платформасы</p>
         </div>
       </div>
 
-      <form onsubmit="handleLogin(event)" class="space-y-4">
+      <!-- Кіру / Тіркелу ауыстырғышы -->
+      <div class="grid grid-cols-2 gap-1.5 bg-slate-100 dark:bg-slate-850 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 mb-5">
+        <button type="button" id="auth-tab-login" onclick="switchAuthTab('login')"
+          class="py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow transition">
+          Кіру
+        </button>
+        <button type="button" id="auth-tab-register" onclick="switchAuthTab('register')"
+          class="py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 transition">
+          Оқушы тіркелуі
+        </button>
+      </div>
+
+      <!-- КІРУ ФОРМАСЫ -->
+      <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Логин</label>
           <div class="relative">
@@ -67,6 +80,44 @@
           class="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-bold text-sm shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2">
           <span>Кіру</span>
           <i class="fas fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <!-- ОҚУШЫ ТІРКЕЛУ ФОРМАСЫ -->
+      <form id="register-form" onsubmit="handleStudentRegister(event)" class="hidden space-y-3.5">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Аты-жөні</label>
+          <div class="relative">
+            <i class="fas fa-id-card absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+            <input id="reg-fullname" type="text" required placeholder="Мысалы: Асқар Серікұлы"
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-cyan-500 text-sm" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Логин</label>
+          <div class="relative">
+            <i class="fas fa-at absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+            <input id="reg-username" type="text" required minlength="3" placeholder="Кем де болса 3 таңбадан артық логин"
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-cyan-500 text-sm" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Пароль</label>
+          <div class="relative">
+            <i class="fas fa-key absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+            <input id="reg-password" type="password" required minlength="4" placeholder="Кемінде 4 таңба"
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-cyan-500 text-sm" />
+          </div>
+        </div>
+
+        <p id="register-error" class="hidden text-xs text-rose-500 font-medium bg-rose-500/10 border border-rose-500/20 rounded-xl px-3 py-2"></p>
+
+        <button id="register-btn" type="submit"
+          class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-bold text-sm shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2">
+          <i class="fas fa-user-plus"></i>
+          <span>Оқушы ретінде тіркелу</span>
         </button>
       </form>
     </div>
@@ -124,7 +175,6 @@
 
     <!-- 1. ОҚУШЫ РЕЖИМІ -->
     <section id="view-student" class="grid grid-cols-1 lg:grid-cols-12 gap-6 fade-in">
-      <!-- Сол жақ бүйір панель -->
       <aside id="student-sidebar" class="hidden lg:block lg:col-span-4 xl:col-span-3 space-y-4">
         <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm">
           <div class="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
@@ -142,7 +192,6 @@
         </div>
       </aside>
 
-      <!-- Оң жақ сабақ/тест аймағы -->
       <div id="student-content-area" class="lg:col-span-8 xl:col-span-9 space-y-6"></div>
     </section>
 
@@ -176,7 +225,7 @@
       </div>
     </section>
 
-    <!-- 3. МҰҒАЛІМ ПАНЕЛІ (ТЕК МҰҒАЛІМГЕ КӨРІНЕДІ) -->
+    <!-- 3. МҰҒАЛІМ ПАНЕЛІ -->
     <section id="view-teacher" class="hidden space-y-6 fade-in">
       <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex flex-wrap items-center justify-between gap-4 shadow-sm">
         <div>
@@ -360,7 +409,29 @@
     let activeChapterExamId = null;
     let studentCompletedResults = [];
 
-    // ================= АВТОРИЗАЦИЯ =================
+    // ================= КІРУ ЖӘНЕ ТІРКЕЛУ =================
+    function switchAuthTab(tab) {
+      const loginTab = document.getElementById('auth-tab-login');
+      const regTab = document.getElementById('auth-tab-register');
+      const loginForm = document.getElementById('login-form');
+      const regForm = document.getElementById('register-form');
+
+      document.getElementById('login-error').classList.add('hidden');
+      document.getElementById('register-error').classList.add('hidden');
+
+      if (tab === 'login') {
+        loginTab.className = 'py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow transition';
+        regTab.className = 'py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 transition';
+        loginForm.classList.remove('hidden');
+        regForm.classList.add('hidden');
+      } else {
+        regTab.className = 'py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow transition';
+        loginTab.className = 'py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 transition';
+        regForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+      }
+    }
+
     async function handleLogin(e) {
       e.preventDefault();
       const username = document.getElementById('login-username').value.trim();
@@ -389,23 +460,67 @@
       }
     }
 
+    async function handleStudentRegister(e) {
+      e.preventDefault();
+      const full_name = document.getElementById('reg-fullname').value.trim();
+      const username = document.getElementById('reg-username').value.trim();
+      const password = document.getElementById('reg-password').value.trim();
+      const errEl = document.getElementById('register-error');
+      const btn = document.getElementById('register-btn');
+
+      errEl.classList.add('hidden');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Тіркелуде...';
+
+      try {
+        // Логиннің бос екенін тексеру
+        const existing = await sbFetch(`users?username=eq.${encodeURIComponent(username)}&select=id`);
+        if (existing && existing.length > 0) {
+          throw new Error('Бұл логин бос емес! Басқа логин таңдаңыз.');
+        }
+
+        // Рөлді әрқашан 'student' етіп қатаң бекіту
+        const created = await sbFetch('users', {
+          method: 'POST',
+          headers: { 'Prefer': 'return=representation' },
+          body: JSON.stringify({
+            full_name,
+            username,
+            password,
+            role: 'student'
+          })
+        });
+
+        currentUser = Array.isArray(created) ? created[0] : created;
+        localStorage.setItem('fizikalab_user', JSON.stringify(currentUser));
+        await initPlatformAfterLogin();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-user-plus"></i><span>Оқушы ретінде тіркелу</span>';
+      }
+    }
+
     function logout() {
       currentUser = null;
       localStorage.removeItem('fizikalab_user');
       document.getElementById('login-screen').classList.remove('hidden');
       document.getElementById('nav-teacher').style.display = 'none';
+      switchMainMode('student');
     }
 
     async function initPlatformAfterLogin() {
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('user-badge').textContent = `${currentUser.full_name} (${currentUser.role === 'teacher' ? 'Мұғалім' : 'Оқушы'})`;
 
-      // Тек мұғалімге ғана Мұғалім панелін көрсету
       const teacherNav = document.getElementById('nav-teacher');
       if (currentUser.role === 'teacher') {
         teacherNav.style.display = 'flex';
       } else {
         teacherNav.style.display = 'none';
+        switchMainMode('student');
       }
 
       await loadCoursesFromCloud();
@@ -435,7 +550,6 @@
           courses = rows[0].data;
         } else {
           courses = JSON.parse(JSON.stringify(DEFAULT_COURSES));
-          // Бастапқы үлгіні базаға сақтап қою
           await sbFetch('course_data', {
             method: 'POST',
             headers: { 'Prefer': 'resolution=merge-duplicates' },
@@ -611,7 +725,6 @@
         return;
       }
 
-      // Бөлім бойынша 15 сұрақтық тест
       if (activeChapterExamId) {
         const questions = chapter.chapterQuiz || [];
         area.innerHTML = `
@@ -644,7 +757,6 @@
         return;
       }
 
-      // Тақырып мазмұны және 5 сұрақтық тест
       const topic = chapter.topics.find(t => t.id === selectedTopicId);
       if (!topic) return;
       const embedUrl = getYouTubeEmbedUrl(topic.youtubeUrl);
@@ -814,6 +926,11 @@
       const username = document.getElementById('new-stu-user').value.trim();
       const password = document.getElementById('new-stu-pass').value.trim();
       try {
+        const existing = await sbFetch(`users?username=eq.${encodeURIComponent(username)}&select=id`);
+        if (existing && existing.length > 0) {
+          alert('Бұл логин бос емес!');
+          return;
+        }
         await sbFetch('users', {
           method: 'POST',
           body: JSON.stringify({ full_name, username, password, role: 'student' })
@@ -823,7 +940,7 @@
         document.getElementById('new-stu-pass').value = '';
         loadStudentsList();
       } catch (e) {
-        alert('Оқушы қосу қатесі (логин бос емес болуы мүмкін): ' + e.message);
+        alert('Оқушы қосу қатесі: ' + e.message);
       }
     }
 
@@ -1093,7 +1210,6 @@
       renderer.render(scene, camera);
     }
 
-    // Бет жүктелгенде бұрын кірген сессияны тексеру
     window.addEventListener('DOMContentLoaded', async () => {
       const saved = localStorage.getItem('fizikalab_user');
       if (saved) {

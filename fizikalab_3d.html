@@ -1,0 +1,2049 @@
+<!DOCTYPE html>
+<html lang="kk" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FizikaLab 3D — Интерактивті Физика Оқыту Платформасы</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js (3D Зертхана үшін) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Google Fonts: Inter (Қазақ кириллицасын толық қолдайды) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#161e2e',
+                            900: '#0f172a',
+                            950: '#090d16',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        /* Арнайы скроллбар */
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.4);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.7);
+        }
+        /* 3D Canvas контейнері */
+        #lab-canvas-container {
+            position: relative;
+            width: 100%;
+            height: 480px;
+            border-radius: 1rem;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #1e293b 0%, #090d16 100%);
+            touch-action: none;
+        }
+        @media (max-width: 768px) {
+            #lab-canvas-container {
+                height: 350px;
+            }
+        }
+        #lab-canvas-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .fade-in {
+            animation: fadeIn 0.25s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- Хабарлама терезесі (Toast Notification - alert() орнына) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Жоғарғы Навигация Тақтасы (Header) -->
+    <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap items-center justify-between h-auto py-3 gap-3">
+                <!-- Логотип -->
+                <div class="flex items-center gap-3">
+                    <button id="mobile-menu-btn" onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-indigo-500/20">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                        <i class="fas fa-atom text-xl animate-spin" style="animation-duration: 12s;"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-500 to-cyan-400 bg-clip-text text-transparent">
+                            FizikaLab 3D
+                        </h1>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">Интерактивті физика оқыту платформасы</p>
+                    </div>
+                </div>
+
+                <!-- Негізгі Режимдер Ауыстырғышы -->
+                <nav class="flex items-center bg-slate-100 dark:bg-slate-850 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
+                    <button onclick="switchMainMode('student')" id="nav-student" class="mode-btn flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-indigo-600 text-white shadow-md">
+                        <i class="fas fa-user-graduate"></i>
+                        <span>Оқушы режимі</span>
+                    </button>
+                    <button onclick="switchMainMode('lab')" id="nav-lab" class="mode-btn flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-slate-600 dark:text-slate-300 hover:text-indigo-500">
+                        <i class="fas fa-cube"></i>
+                        <span>3D Зертхана</span>
+                    </button>
+                    <button onclick="switchMainMode('teacher')" id="nav-teacher" class="mode-btn flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-slate-600 dark:text-slate-300 hover:text-indigo-500">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <span>Мұғалім панелі</span>
+                    </button>
+                </nav>
+
+                <!-- Оң жақ батырмалар (Тақырып түсі және Деректерді қалпына келтіру) -->
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleTheme()" title="Жарық / Қараңғы режим" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                        <i id="theme-icon" class="fas fa-sun text-amber-400"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- НЕГІЗГІ МАЗМҰН АЙМАҒЫ -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ========================================================= -->
+        <!-- 1. ОҚУШЫ РЕЖИМІ (STUDENT LEARNING MODE)                   -->
+        <!-- ========================================================= -->
+        <section id="view-student" class="fade-in">
+            <div class="flex flex-col lg:flex-row gap-6">
+                
+                <!-- Бүйірлік Мәзір (Тараулар мен Тақырыптар) -->
+                <aside id="student-sidebar" class="w-full lg:w-80 shrink-0 hidden lg:block">
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm sticky top-24">
+                        <!-- Жалпы Прогресс -->
+                        <div class="mb-5 p-3.5 rounded-xl bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-indigo-500/20">
+                            <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
+                                <span class="text-indigo-600 dark:text-indigo-400">Оқу үлгерімі</span>
+                                <span id="overall-progress-text" class="font-bold">0%</span>
+                            </div>
+                            <div class="w-full h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div id="overall-progress-bar" class="h-full bg-gradient-to-r from-indigo-500 to-cyan-400 transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Курс бағдарламасы</h2>
+                            <span id="chapters-count-badge" class="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 font-medium">0 тарау</span>
+                        </div>
+
+                        <!-- Тараулар тізімі -->
+                        <div id="student-chapters-list" class="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
+                            <!-- JS арқылы толтырылады -->
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Негізгі Оқу Аймағы (Тақырып теориясы, Видео, Тесттер) -->
+                <div id="student-content-area" class="flex-1 min-w-0">
+                    <!-- JS арқылы динамикалық түрде көрсетіледі -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 2. 3D ВИРТУАЛДЫ ЗЕРТХАНА (3D VIRTUAL PHYSICS LAB)         -->
+        <!-- ========================================================= -->
+        <section id="view-lab" class="hidden fade-in">
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-sm">
+                <!-- Зертхана Тақырыбы және Тәжірибе Таңдау -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-500 text-xs font-semibold mb-2">
+                            <i class="fas fa-vr-cardboard"></i> Интерактивті 3D Модельдеу
+                        </div>
+                        <h2 class="text-2xl font-bold">3D Виртуалды Физика Зертханасы</h2>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Физикалық құбылыстарды 3D кеңістікте бақылаңыз. Камераны бұру үшін тінтуірді (немесе саусақты) жылжытыңыз.</p>
+                    </div>
+
+                    <!-- 4 Зертханалық жұмыс таңдау батырмалары -->
+                    <div class="grid grid-cols-2 sm:flex flex-wrap gap-2">
+                        <button onclick="selectLabExperiment('pendulum')" id="lab-tab-pendulum" class="lab-exp-btn px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-indigo-600 text-white shadow-md transition flex items-center gap-2">
+                            <i class="fas fa-stopwatch"></i> <span>1. Маятник</span>
+                        </button>
+                        <button onclick="selectLabExperiment('projectile')" id="lab-tab-projectile" class="lab-exp-btn px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-indigo-500/20 transition flex items-center gap-2">
+                            <i class="fas fa-meteor"></i> <span>2. Бұрышпен лақтыру</span>
+                        </button>
+                        <button onclick="selectLabExperiment('incline')" id="lab-tab-incline" class="lab-exp-btn px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-indigo-500/20 transition flex items-center gap-2">
+                            <i class="fas fa-shapes"></i> <span>3. Көлбеу жазықтық</span>
+                        </button>
+                        <button onclick="selectLabExperiment('wave')" id="lab-tab-wave" class="lab-exp-btn px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-indigo-500/20 transition flex items-center gap-2">
+                            <i class="fas fa-water"></i> <span>4. 3D Толқын өрісі</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3D Көрініс және Басқару Панелі -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+                    <!-- 3D Canvas (8 баған) -->
+                    <div class="lg:col-span-8 flex flex-col">
+                        <div id="lab-canvas-container" class="border border-slate-700/60 shadow-inner">
+                            <!-- HUD Ақпараттық қабат -->
+                            <div id="lab-hud" class="absolute top-3 left-3 right-3 flex flex-wrap justify-between items-start gap-2 pointer-events-none z-10">
+                                <div class="bg-slate-900/80 backdrop-blur-md border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-200 shadow-lg">
+                                    <div id="lab-hud-title" class="font-bold text-cyan-400 text-sm mb-0.5">Математикалық маятник</div>
+                                    <div id="lab-hud-formula" class="font-mono text-slate-300">T = 2π√(L / g)</div>
+                                </div>
+                                <div id="lab-live-metrics" class="bg-slate-900/80 backdrop-blur-md border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-200 shadow-lg font-mono space-y-0.5">
+                                    <!-- Нақты уақыттағы физикалық шамалар -->
+                                </div>
+                            </div>
+
+                            <!-- Камераны бастапқы күйге келтіру -->
+                            <button onclick="resetLabCamera()" class="absolute bottom-3 right-3 z-10 px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-600 backdrop-blur-sm transition">
+                                <i class="fas fa-video mr-1"></i> Камераны түзеу
+                            </button>
+                        </div>
+
+                        <!-- Физикалық түсіндірме қорабы -->
+                        <div id="lab-explanation-box" class="mt-4 p-4 rounded-xl bg-slate-100 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 text-sm leading-relaxed">
+                            <!-- JS арқылы жаңартылады -->
+                        </div>
+                    </div>
+
+                    <!-- Параметрлерді Басқару Панелі (4 баған) -->
+                    <div class="lg:col-span-4 bg-slate-50 dark:bg-slate-850 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-base font-bold flex items-center gap-2 pb-3 mb-4 border-b border-slate-200 dark:border-slate-700">
+                                <i class="fas fa-sliders-h text-indigo-500"></i> Тәжірибе параметрлері
+                            </h3>
+                            <div id="lab-controls-panel" class="space-y-4">
+                                <!-- Әр тәжірибеге сәйкес жүгірткілер (sliders) JS арқылы салынады -->
+                            </div>
+                        </div>
+
+                        <div class="pt-5 mt-5 border-t border-slate-200 dark:border-slate-700 flex flex-col gap-2">
+                            <button id="lab-action-btn" onclick="triggerLabAction()" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white font-bold text-sm shadow-lg shadow-indigo-500/25 transition flex items-center justify-center gap-2">
+                                <i class="fas fa-play"></i> <span>Қайта іске қосу</span>
+                            </button>
+                            <button onclick="toggleLabPause()" id="lab-pause-btn" class="w-full py-2.5 px-4 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-xs font-semibold transition">
+                                <i class="fas fa-pause mr-1"></i> Кідірту / Жалғастыру
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 3. МҰҒАЛІМ ПАНЕЛІ (TEACHER / ADMIN CONTENT BUILDER)       -->
+        <!-- ========================================================= -->
+        <section id="view-teacher" class="hidden fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Сол жақ: Тараулар тізімі және Жаңа тарау қосу -->
+                <div class="lg:col-span-4 space-y-5">
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-bold flex items-center gap-2">
+                                <i class="fas fa-layer-group text-indigo-500"></i> Тараулар
+                            </h2>
+                            <button onclick="openChapterModal()" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow transition flex items-center gap-1.5">
+                                <i class="fas fa-plus"></i> Тарау қосу
+                            </button>
+                        </div>
+
+                        <div id="teacher-chapters-list" class="space-y-2.5">
+                            <!-- JS арқылы толтырылады -->
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800">
+                            <button onclick="confirmResetDemoData()" class="w-full py-2 px-3 rounded-xl border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 text-xs font-medium transition flex items-center justify-center gap-2">
+                                <i class="fas fa-rotate-left"></i> Әдепкі үлгі деректерді қалпына келтіру
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Оң жақ: Таңдалған тарауды өңдеу (Тақырыптар, Видео, 5 Тест, Бөлімнің 15 Тесті) -->
+                <div class="lg:col-span-8">
+                    <div id="teacher-editor-area" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-sm">
+                        <!-- JS арқылы толтырылады -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================================= -->
+    <!-- МОДАЛЬДЫ ТЕРЕЗЕЛЕР (Тарау қосу, Тақырып/5 Тест, 15 Тест)    -->
+    <!-- ========================================================= -->
+
+    <!-- 1. Жаңа Тарау Қосу/Өңдеу Модалі -->
+    <div id="modal-chapter" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl fade-in">
+            <div class="flex justify-between items-center pb-3 mb-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 id="modal-chapter-title" class="text-lg font-bold">Жаңа тарау қосу</h3>
+                <button onclick="closeModal('modal-chapter')" class="text-slate-400 hover:text-slate-200"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <form id="form-chapter" onsubmit="saveChapter(event)" class="space-y-4">
+                <input type="hidden" id="chapter-edit-id">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Тарау атауы *</label>
+                    <input type="text" id="chapter-input-title" required placeholder="Мысалы: Молекулалық физика және термодинамика" class="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-850 border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-indigo-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Тарау сипаттамасы</label>
+                    <textarea id="chapter-input-desc" rows="3" placeholder="Бұл тарауда не оқытылатыны туралы қысқаша мәлімет..." class="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-850 border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-indigo-500 text-sm"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-3">
+                    <button type="button" onclick="closeModal('modal-chapter')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-sm font-medium">Бас тарту</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow">Сақтау</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Тақырып және 5 Тест Сұрағын Қосу/Өңдеу Модалі -->
+    <div id="modal-topic" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl fade-in">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+                <h3 id="modal-topic-title" class="text-lg font-bold">Жаңа тақырып және 5 тест сұрағын қосу</h3>
+                <button onclick="closeModal('modal-topic')" class="text-slate-400 hover:text-slate-200"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            
+            <form id="form-topic" onsubmit="saveTopic(event)" class="p-6 overflow-y-auto space-y-5 flex-1">
+                <input type="hidden" id="topic-edit-id">
+                
+                <!-- Тақырып атауы және YouTube -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Тақырып атауы *</label>
+                        <input type="text" id="topic-input-title" required placeholder="Мысалы: Ом заңы. Электр кедергісі" class="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-850 border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-indigo-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">YouTube видео сілтемесі</label>
+                        <input type="url" id="topic-input-youtube" oninput="previewYoutubeInModal(this.value)" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-850 border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-indigo-500 text-sm">
+                    </div>
+                </div>
+
+                <!-- YouTube Алдын ала қарау -->
+                <div id="modal-yt-preview" class="hidden rounded-xl overflow-hidden border border-slate-700 bg-black aspect-video max-h-56 mx-auto"></div>
+
+                <!-- Теориялық контекст / мәтін -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Теориялық контекст (Түсіндірме мәтін, формулалар) *</label>
+                    <textarea id="topic-input-context" rows="5" required placeholder="Тақырыптың негізгі ұғымдарын, анықтамалары мен формулаларын жазыңыз..." class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-850 border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-indigo-500 text-sm leading-relaxed"></textarea>
+                </div>
+
+                <!-- 5 Тест Сұрағы Құрастырушысы -->
+                <div class="pt-4 border-t border-slate-200 dark:border-slate-800">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div>
+                            <h4 class="text-base font-bold text-indigo-500">Тақырып бойынша 5 тест сұрағы</h4>
+                            <p class="text-xs text-slate-500">Оқушы тақырыпты оқып болған соң осы 5 сұрақты тапсырады.</p>
+                        </div>
+                    </div>
+                    <div id="topic-questions-builder" class="space-y-4">
+                        <!-- 5 сұрақ блогы JS арқылы генерацияланады -->
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="closeModal('modal-topic')" class="px-5 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-sm font-medium">Бас тарту</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg">Тақырыпты сақтау</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Бөлім / Тарау бойынша 15 Қорытынды Тест Құрастырушы Модалі -->
+    <div id="modal-chapter-exam" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl fade-in">
+            <div class="flex flex-wrap justify-between items-center gap-2 px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+                <div>
+                    <h3 class="text-lg font-bold">Бөлім бойынша қорытынды 15 тест сұрағы</h3>
+                    <p class="text-xs text-slate-500">Тараудың барлық тақырыптарын аяқтаған соң оқушы тапсыратын қорытынды емтихан.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="autoFillChapterExamFromTopics()" class="px-3 py-1.5 rounded-xl bg-cyan-600/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-600/30 text-xs font-semibold transition flex items-center gap-1.5">
+                        <i class="fas fa-magic"></i> Тақырыптардан авто-толтыру
+                    </button>
+                    <button onclick="closeModal('modal-chapter-exam')" class="text-slate-400 hover:text-slate-200 p-1"><i class="fas fa-times text-lg"></i></button>
+                </div>
+            </div>
+            
+            <form id="form-chapter-exam" onsubmit="saveChapterExam(event)" class="p-6 overflow-y-auto space-y-4 flex-1">
+                <div id="chapter-exam-builder" class="space-y-4">
+                    <!-- 15 сұрақ блогы JS арқылы генерацияланады -->
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="closeModal('modal-chapter-exam')" class="px-5 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-sm font-medium">Бас тарту</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg">15 Тест сұрағын сақтау</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. Растау Модалі (confirm() орнына) -->
+    <div id="modal-confirm" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl fade-in">
+            <h3 id="confirm-title" class="text-lg font-bold mb-2">Растау</h3>
+            <p id="confirm-message" class="text-sm text-slate-500 dark:text-slate-400 mb-6">Бұл әрекетті орындауға сенімдісіз бе?</p>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('modal-confirm')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-sm font-medium">Жоқ</button>
+                <button id="confirm-yes-btn" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold">Иә, орындау</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- JAVASCRIPT ЛОГИКАСЫ                                       -->
+    <!-- ========================================================= -->
+    <script>
+        // =========================================================
+        // 1. ӘДЕПКІ (DEMO) ДЕРЕКТЕР ЖӘНЕ LOCALSTORAGE БАСҚАРУЫ
+        // =========================================================
+        const STORAGE_KEY = 'fizikalab_3d_platform_data_v1';
+        const PROGRESS_KEY = 'fizikalab_3d_student_progress_v1';
+
+        const DEFAULT_DATA = {
+            chapters: [
+                {
+                    id: 'chap-mechanics-1',
+                    title: '1-тарау. Механика: Кинематика және Динамика негіздері',
+                    description: 'Денелердің механикалық қозғалысын, үдеуді, Ньютон заңдарын және тартылыс күштерін оқып үйрену бөлімі.',
+                    topics: [
+                        {
+                            id: 'topic-kinematics-1',
+                            title: '1.1. Теңүдемелі түзусызықты қозғалыс. Үдеу',
+                            youtubeUrl: 'https://www.youtube.com/watch?v=ZM8ECpBuQYE',
+                            context: `Теңүдемелі қозғалыс — дененің жылдамдығы кез келген тең уақыт аралықтарында бірдей шамаға өзгеретін қозғалыс.\n\nҮдеу (a) — жылдамдықтың өзгеру шапшаңдығын сипаттайтын векторлық физикалық шама. ХБЖ (СИ) жүйесінде өлшем бірлігі: м/с².\n\nНегізгі формулалар:\n• Үдеу формуласы: a = (v - v₀) / t\n• Кез келген уақыт мезетіндегі жылдамдық: v = v₀ + a·t\n• Орын ауыстыру формуласы: S = v₀·t + (a·t²) / 2\n• Уақытқа тәуелсіз орын ауыстыру: v² - v₀² = 2·a·S\n\nЕгер үдеу бағыты бастапқы жылдамдық бағытымен сәйкес келсе (a > 0), қозғалыс үдемелі, ал қарама-қарсы болса (a < 0), қозғалыс баяулайтын (кемімелі) болады.`,
+                            questions: [
+                                {
+                                    q: 'Үдеудің Халықаралық бірліктер жүйесіндегі (ХБЖ) өлшем бірлігі қандай?',
+                                    options: ['м/с', 'м/с²', 'Н·м', 'кг·м/с'],
+                                    correct: 1
+                                },
+                                {
+                                    q: 'Тыныштық күйден (v₀ = 0) 2 м/с² үдеумен қозғалған автомобиль 5 секундта қандай жылдамдық алады?',
+                                    options: ['2.5 м/с', '7 м/с', '10 м/с', '25 м/с'],
+                                    correct: 2
+                                },
+                                {
+                                    q: 'Бастапқы жылдамдығы 4 м/с дене 2 м/с² үдеумен 3 секунд қозғалды. Оның жүрген жолы (орын ауыстыруы) нешеге тең?',
+                                    options: ['12 м', '18 м', '21 м', '30 м'],
+                                    correct: 2
+                                },
+                                {
+                                    q: 'Егер дененің жылдамдық векторы мен үдеу векторы қарама-қарсы бағытталса, қозғалыс түрі қандай болады?',
+                                    options: ['Бірқалыпты', 'Теңүдемелі', 'Теңбаяулайтын (кемімелі)', 'Шеңбер бойымен'],
+                                    correct: 2
+                                },
+                                {
+                                    q: 'v² - v₀² = 2aS формуласы қай шаманы уақытсыз есептеуге мүмкіндік береді?',
+                                    options: ['Тек массаны', 'Орын ауыстыруды (S)', 'Күш импульсін', 'Жиілікті'],
+                                    correct: 1
+                                }
+                            ]
+                        },
+                        {
+                            id: 'topic-newton-2',
+                            title: '1.2. Ньютонның қозғалыс заңдары және Күш',
+                            youtubeUrl: 'https://www.youtube.com/watch?v=kKKM8Y-u7ds',
+                            context: `Динамика — денелердің қозғалысын оны тудыратын себептермен (күштермен) байланыстыра отырып зерттейтін механика бөлімі.\n\n1. Ньютонның бірінші заңы (Инерция заңы): Егер денеге басқа денелер әрекет етпесе немесе әрекет ететін күштер теңгерілген болса, дене өзінің тыныштық күйін немесе бірқалыпты түзусызықты қозғалысын сақтайды.\n\n2. Ньютонның екінші заңы: Дененің алатын үдеуі оған әрекет ететін қорытқы күшке тура пропорционал, ал дененің массасына кері пропорционал:\n• F = m · a  немесе  a = F / m\nКүштің өлшем бірлігі — Ньютон (1 Н = 1 кг·м/с²).\n\n3. Ньютонның үшінші заңы: Екі дене бір-біріне модулі бойынша тең, бағыты бойынша қарама-қарсы күштермен әрекет етеді: F₁ = -F₂.`,
+                            questions: [
+                                {
+                                    q: 'Ньютонның екінші заңының математикалық өрнегін көрсетіңіз:',
+                                    options: ['F = m · v', 'F = m · a', 'F = k · x', 'p = m · v'],
+                                    correct: 1
+                                },
+                                {
+                                    q: 'Массасы 4 кг денеге 20 Н күш әрекет етеді. Дене қандай үдеумен қозғалады?',
+                                    options: ['0.2 м/с²', '5 м/с²', '16 м/с²', '80 м/с²'],
+                                    correct: 1
+                                },
+                                {
+                                    q: 'Денеге әрекет ететін барлық күштердің теңәрекетті күші нөлге тең болса, дене қалай қозғалады?',
+                                    options: ['Үдемелі қозғалады', 'Бірқалыпты түзусызықты қозғалады немесе тыныштықта тұрады', 'Шеңбер бойымен үдейді', 'Тоқтап қалады'],
+                                    correct: 1
+                                },
+                                {
+                                    q: '1 Ньютон (1 Н) күш қандай бірліктерге тең?',
+                                    options: ['1 кг·м/с', '1 кг·м/с²', '1 кг/м³', '1 Дж/с'],
+                                    correct: 1
+                                },
+                                {
+                                    q: 'Ньютонның үшінші заңы бойынша әрекет етуші және қарсы әрекет етуші күштер:',
+                                    options: ['Бір денеге түседі және бірін-бірі теңгереді', 'Әртүрлі екі денеге түседі, модульдері тең, бағыттары қарама-қарсы', 'Тек сұйықтарда орындалады', 'Модульдері әртүрлі болады'],
+                                    correct: 1
+                                }
+                            ]
+                        },
+                        {
+                            id: 'topic-gravity-friction',
+                            title: '1.3. Бүкіләлемдік тартылыс заңы және Үйкеліс күші',
+                            youtubeUrl: 'https://www.youtube.com/watch?v=7gf6YpdvtE0',
+                            context: `Бүкіләлемдік тартылыс заңы (И. Ньютон, 1687 ж.): Екі материялық нүкте бір-біріне массаларының көбейтіндісіне тура пропорционал, ал арақашықтықтарының квадратына кері пропорционал күшпен тартылады:\n• F = G · (m₁ · m₂) / r²\nМұндағы G = 6.67 × 10⁻¹¹ Н·м²/кг² — гравитациялық тұрақты.\n\nАуырлық күші: F_а = m · g (Жер бетінде g ≈ 9.8 м/с²).\n\nҮйкеліс күші — бір дене екінші дененің бетімен қозғалғанда пайда болатын және қозғалысқа қарсы бағытталған күш:\n• F_үйк = μ · N\nМұндағы μ — үйкеліс коэффициенті (өлшемсіз шама), N — тіректің реакция күші (горизонталь бетте N = m·g).`,
+                            questions: [
+                                {
+                                    q: 'Екі дененің арақашықтығын 2 есе арттырсақ, олардың арасындағы тартылыс күші қалай өзгереді?',
+                                    options: ['2 есе артады', '2 есе кемиді', '4 есе кемиді', '4 есе артады'],
+                                    correct: 2
+                                },
+                                {
+                                    q: 'Сырғанау үйкеліс күшінің формуласын көрсетіңіз:',
+                                    options: ['F = k · x', 'F = μ · N', 'F = m · a', 'F = ρ · g · V'],
+                                    correct: 1
+                                },
+                                {
+                                    q: 'Горизонталь жолда массасы 10 кг жүк сүйретіліп келеді. Үйкеліс коэффициенті μ = 0.2, g = 10 м/с². Үйкеліс күші нешеге тең?',
+                                    options: ['2 Н', '20 Н', '50 Н', '200 Н'],
+                                    correct: 1
+                                },
+                                {
+                                    q: 'Гравитациялық тұрақтының (G) шамасы нешеге тең?',
+                                    options: ['9.8 м/с²', '6.67 × 10⁻¹¹ Н·м²/кг²', '3 × 10⁸ м/с', '1.6 × 10⁻¹⁹ Кл'],
+                                    correct: 1
+                                },
+                                {
+                                    q: 'Үйкеліс коэффициентінің (μ) өлшем бірлігі қандай?',
+                                    options: ['Ньютон (Н)', 'Метр (м)', 'Өлшемсіз шама', 'Паскаль (Па)'],
+                                    correct: 2
+                                }
+                            ]
+                        }
+                    ],
+                    chapterExam: [
+                        { q: 'Механикалық қозғалыстың себептерін зерттейтін бөлім қалай аталады?', options: ['Кинематика', 'Динамика', 'Статика', 'Оптика'], correct: 1 },
+                        { q: 'Үдеудің өлшем бірлігі қандай?', options: ['м/с', 'м/с²', 'Н/м', 'Дж'], correct: 1 },
+                        { q: 'Бастапқы жылдамдығы нөлге тең дене 3 м/с² үдеумен 4 с ішінде қанша жол жүреді?', options: ['12 м', '24 м', '48 м', '6 м'], correct: 1 },
+                        { q: 'Массасы 5 кг денеге 15 Н күш әрекет етеді. Дененің үдеуі қандай?', options: ['3 м/с²', '75 м/с²', '0.3 м/с²', '10 м/с²'], correct: 0 },
+                        { q: 'Инерция заңы Ньютонның нешінші заңы?', options: ['Бірінші', 'Екінші', 'Үшінші', 'Төртінші'], correct: 0 },
+                        { q: 'Ауырлық күшінің формуласы қандай?', options: ['F = kx', 'F = mg', 'F = μN', 'F = ma'], correct: 1 },
+                        { q: 'Екі дененің массаларын 2 есе арттырсақ, тартылыс күші неше есе артады?', options: ['2 есе', '4 есе', '8 есе', 'Өзгермейді'], correct: 1 },
+                        { q: 'Массасы 2 кг дененің Жер бетіндегі ауырлық күші шамамен нешеге тең? (g = 10 м/с²)', options: ['2 Н', '20 Н', '0.2 Н', '200 Н'], correct: 1 },
+                        { q: 'Үйкеліс күші әрқашан қалай бағытталады?', options: ['Қозғалыс бағытымен', 'Қозғалысқа қарсы', 'Тік жоғары', 'Тік төмен'], correct: 1 },
+                        { q: 'Горизонталь беттегі массасы 5 кг денеге әрекет ететін тірек реакция күші N нешеге тең? (g = 10 м/с²)', options: ['5 Н', '50 Н', '0.5 Н', '25 Н'], correct: 1 },
+                        { q: 'Еркін түсу үдеуі g Жер бетінде шамамен нешеге тең?', options: ['9.8 м/с²', '6.67 м/с²', '3.14 м/с²', '1.62 м/с²'], correct: 0 },
+                        { q: 'Жылдамдықтың уақыт бойынша өзгеру шапшаңдығын сипаттайтын шама:', options: ['Орын ауыстыру', 'Үдеу', 'Импульс', 'Жұмыс'], correct: 1 },
+                        { q: 'Дене 20 м/с жылдамдықпен тежеліп, 4 секундта тоқтады. Тежелу үдеуінің модулі қандай?', options: ['5 м/с²', '80 м/с²', '4 м/с²', '0.2 м/с²'], correct: 0 },
+                        { q: 'Ньютонның 3-заңы бойынша әрекет етуші күш 50 Н болса, қарсы әрекет етуші күш модулі:', options: ['0 Н', '25 Н', '50 Н', '100 Н'], correct: 2 },
+                        { q: 'Үйкеліс коэффициенті μ = 0.4 және реакция күші N = 100 Н болса, үйкеліс күші нешеге тең?', options: ['4 Н', '40 Н', '250 Н', '400 Н'], correct: 1 }
+                    ]
+                }
+            ]
+        };
+
+        // Қолданба күйі (State)
+        let appData = loadAppData();
+        let studentProgress = loadStudentProgress();
+        let currentMainMode = 'student';
+        let selectedChapterId = appData.chapters[0]?.id || null;
+        let selectedTopicId = appData.chapters[0]?.topics[0]?.id || null;
+        let studentViewState = 'topic'; // 'topic' | 'topic-quiz' | 'chapter-exam'
+        let teacherSelectedChapterId = appData.chapters[0]?.id || null;
+
+        function loadAppData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && Array.isArray(parsed.chapters) && parsed.chapters.length > 0) {
+                        return parsed;
+                    }
+                }
+            } catch (e) {
+                console.error('Деректерді жүктеу қатесі:', e);
+            }
+            return JSON.parse(JSON.stringify(DEFAULT_DATA));
+        }
+
+        function saveAppData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            } catch (e) {
+                showToast('Жадқа сақтау кезінде қате шықты!', 'error');
+            }
+        }
+
+        function loadStudentProgress() {
+            try {
+                const raw = localStorage.getItem(PROGRESS_KEY);
+                if (raw) return JSON.parse(raw);
+            } catch (e) {}
+            return {
+                completedTopics: {}, // { topicId: { score: 5, total: 5 } }
+                completedExams: {}   // { chapterId: { score: 14, total: 15 } }
+            };
+        }
+
+        function saveStudentProgress() {
+            localStorage.setItem(PROGRESS_KEY, JSON.stringify(studentProgress));
+        }
+
+        // =========================================================
+        // 2. КӨМЕКШІ ФУНКЦИЯЛАР (YouTube парсер, Toast, Модальдар)
+        // =========================================================
+        function parseYoutubeEmbedUrl(url) {
+            if (!url) return null;
+            const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+            const match = url.match(regExp);
+            if (match && match[1]) {
+                return `https://www.youtube.com/embed/${match[1]}?rel=0`;
+            }
+            return null;
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = type === 'success'
+                ? 'bg-emerald-600 text-white border-emerald-400/40'
+                : type === 'error'
+                ? 'bg-rose-600 text-white border-rose-400/40'
+                : 'bg-indigo-600 text-white border-indigo-400/40';
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+
+            toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium fade-in ${colors}`;
+            toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            const icon = document.getElementById('theme-icon');
+            icon.className = isDark ? 'fas fa-sun text-amber-400' : 'fas fa-moon text-indigo-600';
+            if (threeScene) {
+                threeScene.background = new THREE.Color(isDark ? 0x0b1120 : 0x1e293b);
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('student-sidebar');
+            sidebar.classList.toggle('hidden');
+        }
+
+        // Негізгі бөлімдер арасында ауысу
+        function switchMainMode(mode) {
+            currentMainMode = mode;
+            ['student', 'lab', 'teacher'].forEach(m => {
+                const view = document.getElementById(`view-${m}`);
+                const btn = document.getElementById(`nav-${m}`);
+                if (m === mode) {
+                    view.classList.remove('hidden');
+                    btn.className = 'mode-btn flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-indigo-600 text-white shadow-md';
+                } else {
+                    view.classList.add('hidden');
+                    btn.className = 'mode-btn flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-slate-600 dark:text-slate-300 hover:text-indigo-500';
+                }
+            });
+
+            if (mode === 'student') {
+                renderStudentMode();
+            } else if (mode === 'teacher') {
+                renderTeacherMode();
+            } else if (mode === 'lab') {
+                initThreeLabIfNeeded();
+                onLabResize();
+            }
+        }
+
+        // =========================================================
+        // 3. ОҚУШЫ РЕЖИМІ (STUDENT LEARNING & QUIZZES)
+        // =========================================================
+        function renderStudentMode() {
+            renderStudentSidebar();
+            renderStudentMainArea();
+        }
+
+        function renderStudentSidebar() {
+            const listEl = document.getElementById('student-chapters-list');
+            const badgeEl = document.getElementById('chapters-count-badge');
+            badgeEl.textContent = `${appData.chapters.length} тарау`;
+
+            // Жалпы прогресті есептеу
+            let totalTopics = 0;
+            let completedCount = 0;
+            appData.chapters.forEach(ch => {
+                ch.topics.forEach(t => {
+                    totalTopics++;
+                    if (studentProgress.completedTopics[t.id]) completedCount++;
+                });
+            });
+            const pct = totalTopics === 0 ? 0 : Math.round((completedCount / totalTopics) * 100);
+            document.getElementById('overall-progress-text').textContent = `${pct}% (${completedCount}/${totalTopics})`;
+            document.getElementById('overall-progress-bar').style.width = `${pct}%`;
+
+            if (appData.chapters.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Әзірге тараулар қосылмаған. Мұғалім панелінен қосыңыз.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = appData.chapters.map((chapter, cIdx) => {
+                const isChapSelected = chapter.id === selectedChapterId;
+                const allTopicsDone = chapter.topics.length > 0 && chapter.topics.every(t => studentProgress.completedTopics[t.id]);
+                const examResult = studentProgress.completedExams[chapter.id];
+
+                const topicsHtml = chapter.topics.map((topic, tIdx) => {
+                    const isTopicSelected = isChapSelected && topic.id === selectedTopicId && studentViewState !== 'chapter-exam';
+                    const isDone = !!studentProgress.completedTopics[topic.id];
+                    return `
+                        <button onclick="selectStudentTopic('${chapter.id}', '${topic.id}')" class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between gap-2 transition ${isTopicSelected ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'}">
+                            <span class="truncate">${topic.title}</span>
+                            ${isDone
+                                ? `<i class="fas fa-check-circle text-emerald-400 shrink-0" title="Тақырып тесті тапсырылған"></i>`
+                                : `<i class="far fa-circle text-slate-400 shrink-0"></i>`
+                            }
+                        </button>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="rounded-xl border ${isChapSelected ? 'border-indigo-500/40 bg-indigo-500/5' : 'border-slate-200 dark:border-slate-800'} p-2.5">
+                        <div class="font-bold text-xs text-slate-800 dark:text-slate-200 mb-2 px-1 flex items-start justify-between gap-1">
+                            <span>${chapter.title}</span>
+                        </div>
+                        <div class="space-y-1">
+                            ${topicsHtml}
+                            <!-- Бөлім бойынша 15 сұрақтық қорытынды тест батырмасы -->
+                            <button onclick="startChapterExam('${chapter.id}')" class="w-full mt-1.5 text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between gap-2 transition ${isChapSelected && studentViewState === 'chapter-exam' ? 'bg-amber-500 text-slate-950 shadow' : allTopicsDone ? 'bg-amber-500/15 text-amber-500 hover:bg-amber-500/25 border border-amber-500/30' : 'bg-slate-100 dark:bg-slate-800/70 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}">
+                                <span class="flex items-center gap-1.5 truncate">
+                                    <i class="fas fa-award"></i> Бөлім тесті (15 сұрақ)
+                                </span>
+                                ${examResult
+                                    ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">${examResult.score}/15</span>`
+                                    : allTopicsDone
+                                    ? `<i class="fas fa-unlock text-amber-400"></i>`
+                                    : `<i class="fas fa-lock text-slate-400" title="Алдымен тақырыптарды оқыңыз"></i>`
+                                }
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectStudentTopic(chapterId, topicId) {
+            selectedChapterId = chapterId;
+            selectedTopicId = topicId;
+            studentViewState = 'topic';
+            // Мобильді мәзір ашық болса жабу
+            if (window.innerWidth < 1024) {
+                document.getElementById('student-sidebar').classList.add('hidden');
+            }
+            renderStudentMode();
+        }
+
+        function renderStudentMainArea() {
+            const area = document.getElementById('student-content-area');
+            const chapter = appData.chapters.find(c => c.id === selectedChapterId) || appData.chapters[0];
+
+            if (!chapter) {
+                area.innerHTML = `
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-10 text-center">
+                        <i class="fas fa-book-open text-4xl text-indigo-500 mb-3"></i>
+                        <h3 class="text-xl font-bold mb-2">Оқу материалдары бос</h3>
+                        <p class="text-sm text-slate-500 mb-4">Жоғарғы мәзірден «Мұғалім панелі» бөліміне өтіп, жаңа тарау мен тақырыптар қосыңыз.</p>
+                        <button onclick="switchMainMode('teacher')" class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold">Мұғалім панеліне өту</button>
+                    </div>
+                `;
+                return;
+            }
+
+            if (studentViewState === 'chapter-exam') {
+                renderChapterExamView(area, chapter);
+                return;
+            }
+
+            const topic = chapter.topics.find(t => t.id === selectedTopicId) || chapter.topics[0];
+            if (!topic) {
+                area.innerHTML = `
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 text-center">
+                        <h3 class="text-lg font-bold mb-2">${chapter.title}</h3>
+                        <p class="text-sm text-slate-500 mb-4">Бұл тарауда әзірге тақырыптар жоқ. Мұғалім панелінен тақырып қосыңыз.</p>
+                        <button onclick="switchMainMode('teacher')" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold">Тақырып қосу</button>
+                    </div>
+                `;
+                return;
+            }
+
+            if (studentViewState === 'topic-quiz') {
+                renderTopicQuizView(area, chapter, topic);
+                return;
+            }
+
+            // Әдепкі: Тақырып теориясы мен YouTube видео көрінісі
+            const embedUrl = parseYoutubeEmbedUrl(topic.youtubeUrl);
+            const topicDoneInfo = studentProgress.completedTopics[topic.id];
+            const formattedContext = topic.context
+                .split('\n')
+                .map(line => line.trim() === '' ? '<br>' : `<p class="mb-2">${escapeHtml(line)}</p>`)
+                .join('');
+
+            area.innerHTML = `
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-8 shadow-sm fade-in">
+                    <!-- Нан қоқымдары (Breadcrumb) -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-4 mb-5 border-b border-slate-200 dark:border-slate-800">
+                        <div class="text-xs font-semibold text-indigo-500 flex items-center gap-2">
+                            <span>${escapeHtml(chapter.title)}</span>
+                        </div>
+                        ${topicDoneInfo
+                            ? `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-500 text-xs font-bold"><i class="fas fa-check-circle"></i> Тақырып меңгерілді (${topicDoneInfo.score}/${topicDoneInfo.total})</span>`
+                            : `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-medium"><i class="far fa-clock"></i> Оқылуда</span>`
+                        }
+                    </div>
+
+                    <h2 class="text-2xl sm:text-3xl font-extrabold mb-6 tracking-tight">${escapeHtml(topic.title)}</h2>
+
+                    <!-- Теориялық Контекст -->
+                    <div class="mb-8">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+                            <i class="fas fa-book-reader text-indigo-500"></i> Теориялық түсіндірме (Контекст)
+                        </h3>
+                        <div class="p-5 sm:p-6 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-sm sm:text-base leading-relaxed">
+                            ${formattedContext}
+                        </div>
+                    </div>
+
+                    <!-- YouTube Видеосабақ -->
+                    ${embedUrl ? `
+                        <div class="mb-8">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+                                <i class="fab fa-youtube text-rose-500 text-base"></i> Бейнесабақ
+                            </h3>
+                            <div class="relative w-full aspect-video rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-lg bg-black">
+                                <iframe class="w-full h-full" src="${embedUrl}" title="YouTube бейнесабақ" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- Төменгі Әрекеттер: 3D Зертхана және 5 сұрақтық Тақырып Тесті -->
+                    <div class="pt-6 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <button onclick="switchMainMode('lab')" class="w-full sm:w-auto px-5 py-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-500 border border-cyan-500/30 text-sm font-bold transition flex items-center justify-center gap-2">
+                            <i class="fas fa-cube"></i> 3D Зертханада тексеру
+                        </button>
+
+                        <button onclick="startTopicQuiz()" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-sm font-bold shadow-lg shadow-indigo-500/30 transition flex items-center justify-center gap-2">
+                            <i class="fas fa-clipboard-check"></i>
+                            <span>Тақырып бойынша тест тапсыру (${topic.questions.length} сұрақ)</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Тақырып бойынша 5 сұрақтық тестті бастау
+        function startTopicQuiz() {
+            studentViewState = 'topic-quiz';
+            renderStudentMainArea();
+        }
+
+        function renderTopicQuizView(area, chapter, topic) {
+            const questions = topic.questions || [];
+            area.innerHTML = `
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-8 shadow-sm fade-in">
+                    <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-200 dark:border-slate-800">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-indigo-500">Тақырыптық бақылау тесті</span>
+                            <h2 class="text-xl sm:text-2xl font-bold mt-1">${escapeHtml(topic.title)}</h2>
+                        </div>
+                        <button onclick="studentViewState='topic'; renderStudentMainArea();" class="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-semibold">
+                            <i class="fas fa-arrow-left mr-1"></i> Теорияға қайту
+                        </button>
+                    </div>
+
+                    <form id="topic-quiz-form" onsubmit="submitTopicQuiz(event, '${chapter.id}', '${topic.id}')" class="space-y-6">
+                        ${questions.map((qObj, idx) => `
+                            <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800" id="tq-card-${idx}">
+                                <p class="font-bold text-sm sm:text-base mb-3.5">
+                                    <span class="inline-block w-7 h-7 rounded-lg bg-indigo-600 text-white text-center leading-7 text-xs mr-2">${idx + 1}</span>
+                                    ${escapeHtml(qObj.q)}
+                                </p>
+                                <div class="space-y-2.5 pl-0 sm:pl-9">
+                                    ${qObj.options.map((opt, oIdx) => `
+                                        <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 hover:border-indigo-500 cursor-pointer transition bg-white dark:bg-slate-900/60">
+                                            <input type="radio" name="tq_${idx}" value="${oIdx}" required class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                                            <span class="text-sm">${escapeHtml(opt)}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                                <div id="tq-feedback-${idx}" class="hidden mt-3 pl-0 sm:pl-9 text-xs font-semibold"></div>
+                            </div>
+                        `).join('')}
+
+                        <div id="topic-quiz-result-box" class="hidden p-5 rounded-2xl border"></div>
+
+                        <div class="flex flex-wrap items-center justify-between gap-3 pt-4">
+                            <button type="submit" id="tq-submit-btn" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg transition">
+                                Жауаптарды тексеру
+                            </button>
+                            <button type="button" id="tq-next-btn" onclick="goToNextTopicOrExam('${chapter.id}', '${topic.id}')" class="hidden px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg transition">
+                                Келесі кезеңге өту <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        }
+
+        function submitTopicQuiz(e, chapterId, topicId) {
+            e.preventDefault();
+            const chapter = appData.chapters.find(c => c.id === chapterId);
+            const topic = chapter.topics.find(t => t.id === topicId);
+            const formData = new FormData(e.target);
+
+            let score = 0;
+            topic.questions.forEach((qObj, idx) => {
+                const chosen = parseInt(formData.get(`tq_${idx}`), 10);
+                const card = document.getElementById(`tq-card-${idx}`);
+                const fb = document.getElementById(`tq-feedback-${idx}`);
+                fb.classList.remove('hidden');
+
+                if (chosen === qObj.correct) {
+                    score++;
+                    card.classList.add('border-emerald-500/60');
+                    fb.innerHTML = `<span class="text-emerald-500"><i class="fas fa-check-circle mr-1"></i> Дұрыс жауап!</span>`;
+                } else {
+                    card.classList.add('border-rose-500/60');
+                    fb.innerHTML = `<span class="text-rose-500"><i class="fas fa-times-circle mr-1"></i> Қате. Дұрыс жауап: <u>${escapeHtml(qObj.options[qObj.correct])}</u></span>`;
+                }
+            });
+
+            const total = topic.questions.length;
+            const passed = score >= Math.ceil(total * 0.6); // 60% немесе одан жоғары
+
+            studentProgress.completedTopics[topicId] = { score, total };
+            saveStudentProgress();
+            renderStudentSidebar();
+
+            const resBox = document.getElementById('topic-quiz-result-box');
+            resBox.classList.remove('hidden');
+            resBox.className = `p-5 rounded-2xl border ${passed ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400' : 'bg-amber-500/10 border-amber-500/40 text-amber-400'}`;
+            resBox.innerHTML = `
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                        <h4 class="text-lg font-extrabold">Нәтиже: ${score} / ${total} (${Math.round((score/total)*100)}%)</h4>
+                        <p class="text-xs mt-1">${passed ? 'Тамаша! Сіз бұл тақырыпты сәтті аяқтадыңыз.' : 'Тақырып тіркелді, бірақ теорияны тағы бір рет қайталап шығуға кеңес береміз.'}</p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('tq-submit-btn').classList.add('hidden');
+            document.getElementById('tq-next-btn').classList.remove('hidden');
+            showToast(`Тест аяқталды: ${score}/${total} ұпай!`);
+        }
+
+        function goToNextTopicOrExam(chapterId, currentTopicId) {
+            const chapter = appData.chapters.find(c => c.id === chapterId);
+            const idx = chapter.topics.findIndex(t => t.id === currentTopicId);
+            if (idx >= 0 && idx < chapter.topics.length - 1) {
+                selectStudentTopic(chapterId, chapter.topics[idx + 1].id);
+            } else {
+                startChapterExam(chapterId);
+            }
+        }
+
+        // Бөлім бойынша 15 сұрақтық қорытынды тест
+        function startChapterExam(chapterId) {
+            selectedChapterId = chapterId;
+            studentViewState = 'chapter-exam';
+            if (window.innerWidth < 1024) {
+                document.getElementById('student-sidebar').classList.add('hidden');
+            }
+            renderStudentMode();
+        }
+
+        function renderChapterExamView(area, chapter) {
+            const allTopicsDone = chapter.topics.length > 0 && chapter.topics.every(t => studentProgress.completedTopics[t.id]);
+            const questions = chapter.chapterExam || [];
+
+            area.innerHTML = `
+                <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-8 shadow-sm fade-in">
+                    <div class="flex flex-wrap items-center justify-between gap-3 pb-5 mb-6 border-b border-slate-200 dark:border-slate-800">
+                        <div>
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 text-amber-500 text-xs font-bold mb-2">
+                                <i class="fas fa-award"></i> Бөлім бойынша қорытынды аттестаттау
+                            </div>
+                            <h2 class="text-xl sm:text-2xl font-extrabold">${escapeHtml(chapter.title)} — Қорытынды тест (${questions.length} сұрақ)</h2>
+                        </div>
+                        <button onclick="selectStudentTopic('${chapter.id}', '${chapter.topics[0]?.id || ''}')" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold">
+                            <i class="fas fa-arrow-left mr-1"></i> Тақырыптарға оралу
+                        </button>
+                    </div>
+
+                    ${!allTopicsDone ? `
+                        <div class="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs sm:text-sm flex items-start gap-3">
+                            <i class="fas fa-exclamation-triangle text-lg mt-0.5"></i>
+                            <div>
+                                <p class="font-bold">Ескерту: Бұл тараудың барлық тақырыптары әлі оқылып бітпеген!</p>
+                                <p class="opacity-90 mt-0.5">Қорытынды тестті бастамас бұрын барлық тақырыптарды оқып, 5 сұрақтық тесттерді тапсыру ұсынылады. Дегенмен, тестті қазір де тапсырып көре аласыз.</p>
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs sm:text-sm flex items-center gap-3">
+                            <i class="fas fa-check-circle text-lg"></i>
+                            <span class="font-semibold">Сіз тараудың барлық тақырыптарын сәтті аяқтадыңыз! Қорытынды 15 сұраққа жауап беріңіз.</span>
+                        </div>
+                    `}
+
+                    ${questions.length === 0 ? `
+                        <p class="text-sm text-slate-500 text-center py-8">Бұл бөлімге әзірге қорытынды тест сұрақтары қосылмаған.</p>
+                    ` : `
+                        <form id="chapter-exam-form" onsubmit="submitChapterExam(event, '${chapter.id}')" class="space-y-5">
+                            ${questions.map((qObj, idx) => `
+                                <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800" id="ce-card-${idx}">
+                                    <p class="font-bold text-sm sm:text-base mb-3">
+                                        <span class="inline-block w-7 h-7 rounded-lg bg-amber-500 text-slate-950 font-extrabold text-center leading-7 text-xs mr-2">${idx + 1}</span>
+                                        ${escapeHtml(qObj.q)}
+                                    </p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pl-0 sm:pl-9">
+                                        ${qObj.options.map((opt, oIdx) => `
+                                            <label class="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 hover:border-amber-500 cursor-pointer transition bg-white dark:bg-slate-900/60">
+                                                <input type="radio" name="ce_${idx}" value="${oIdx}" required class="w-4 h-4 text-amber-500 focus:ring-amber-500">
+                                                <span class="text-xs sm:text-sm">${escapeHtml(opt)}</span>
+                                            </label>
+                                        `).join('')}
+                                    </div>
+                                    <div id="ce-feedback-${idx}" class="hidden mt-3 pl-0 sm:pl-9 text-xs font-semibold"></div>
+                                </div>
+                            `).join('')}
+
+                            <div id="chapter-exam-result-box" class="hidden p-6 rounded-2xl border"></div>
+
+                            <div class="pt-4">
+                                <button type="submit" id="ce-submit-btn" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-sm shadow-lg transition">
+                                    Қорытынды тестті аяқтау және бағалау
+                                </button>
+                            </div>
+                        </form>
+                    `}
+                </div>
+            `;
+        }
+
+        function submitChapterExam(e, chapterId) {
+            e.preventDefault();
+            const chapter = appData.chapters.find(c => c.id === chapterId);
+            const formData = new FormData(e.target);
+
+            let score = 0;
+            chapter.chapterExam.forEach((qObj, idx) => {
+                const chosen = parseInt(formData.get(`ce_${idx}`), 10);
+                const card = document.getElementById(`ce-card-${idx}`);
+                const fb = document.getElementById(`ce-feedback-${idx}`);
+                fb.classList.remove('hidden');
+
+                if (chosen === qObj.correct) {
+                    score++;
+                    card.classList.add('border-emerald-500/60');
+                    fb.innerHTML = `<span class="text-emerald-500"><i class="fas fa-check-circle mr-1"></i> Дұрыс!</span>`;
+                } else {
+                    card.classList.add('border-rose-500/60');
+                    fb.innerHTML = `<span class="text-rose-500"><i class="fas fa-times-circle mr-1"></i> Қате. Дұрыс жауап: <u>${escapeHtml(qObj.options[qObj.correct])}</u></span>`;
+                }
+            });
+
+            const total = chapter.chapterExam.length;
+            const percent = Math.round((score / total) * 100);
+            let gradeText = 'Қанағаттанарлықсыз (2)';
+            if (percent >= 85) gradeText = 'Өте жақсы! (5)';
+            else if (percent >= 70) gradeText = 'Жақсы! (4)';
+            else if (percent >= 50) gradeText = 'Қанағаттанарлық (3)';
+
+            studentProgress.completedExams[chapterId] = { score, total };
+            saveStudentProgress();
+            renderStudentSidebar();
+
+            const resBox = document.getElementById('chapter-exam-result-box');
+            resBox.classList.remove('hidden');
+            resBox.className = 'p-6 rounded-2xl bg-gradient-to-r from-indigo-600/20 to-cyan-600/20 border border-indigo-500/40';
+            resBox.innerHTML = `
+                <h3 class="text-xl font-extrabold text-indigo-400 mb-1">Қорытынды емтихан нәтижесі: ${score} / ${total} (${percent}%)</h3>
+                <p class="text-base font-bold">Баға: <span class="text-amber-400">${gradeText}</span></p>
+            `;
+
+            document.getElementById('ce-submit-btn').classList.add('hidden');
+            resBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            showToast(`Бөлім тесті аяқталды: ${score}/${total}!`);
+        }
+
+        // =========================================================
+        // 4. МҰҒАЛІМ ПАНЕЛІ (TEACHER CONTENT MANAGEMENT)
+        // =========================================================
+        function renderTeacherMode() {
+            const listEl = document.getElementById('teacher-chapters-list');
+            const editorEl = document.getElementById('teacher-editor-area');
+
+            if (!appData.chapters.find(c => c.id === teacherSelectedChapterId)) {
+                teacherSelectedChapterId = appData.chapters[0]?.id || null;
+            }
+
+            if (appData.chapters.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Тараулар жоқ. Жоғарыдағы «Тарау қосу» батырмасын басыңыз.</p>`;
+                editorEl.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-folder-plus text-4xl text-indigo-500 mb-3"></i>
+                        <h3 class="text-lg font-bold mb-1">Жаңа тарау жасаудан бастаңыз</h3>
+                        <p class="text-xs text-slate-500 mb-4">Тарау ішіне тақырыптар, YouTube видеолар және тест сұрақтарын қоса аласыз.</p>
+                        <button onclick="openChapterModal()" class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-bold">+ Тарау қосу</button>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = appData.chapters.map(ch => {
+                const isSelected = ch.id === teacherSelectedChapterId;
+                return `
+                    <div onclick="teacherSelectedChapterId='${ch.id}'; renderTeacherMode();" class="cursor-pointer p-3.5 rounded-xl border transition flex items-center justify-between gap-2 ${isSelected ? 'bg-indigo-600/15 border-indigo-500 text-indigo-400 font-bold' : 'bg-slate-50 dark:bg-slate-850 border-slate-200 dark:border-slate-800 hover:border-indigo-500/50'}">
+                        <div class="min-w-0">
+                            <div class="text-sm truncate">${escapeHtml(ch.title)}</div>
+                            <div class="text-[11px] text-slate-500 font-normal mt-0.5">${ch.topics.length} тақырып • ${ch.chapterExam.length} қорытынды тест</div>
+                        </div>
+                        <i class="fas fa-chevron-right text-xs opacity-60"></i>
+                    </div>
+                `;
+            }).join('');
+
+            const activeChapter = appData.chapters.find(c => c.id === teacherSelectedChapterId);
+            editorEl.innerHTML = `
+                <!-- Тарау тақырыбы және әрекеттер -->
+                <div class="flex flex-wrap items-start justify-between gap-4 pb-5 mb-6 border-b border-slate-200 dark:border-slate-800">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-500">Таңдалған тарау</span>
+                        <h2 class="text-xl sm:text-2xl font-extrabold mt-0.5">${escapeHtml(activeChapter.title)}</h2>
+                        <p class="text-xs sm:text-sm text-slate-500 mt-1">${escapeHtml(activeChapter.description || 'Сипаттама берілмеген')}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openChapterModal('${activeChapter.id}')" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-semibold">
+                            <i class="fas fa-edit mr-1"></i> Өңдеу
+                        </button>
+                        <button onclick="deleteChapter('${activeChapter.id}')" class="px-3 py-2 rounded-xl bg-rose-500/15 text-rose-500 hover:bg-rose-500/25 text-xs font-semibold">
+                            <i class="fas fa-trash-alt mr-1"></i> Жою
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Тақырыптар бөлімі -->
+                <div class="mb-8">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <h3 class="text-base font-bold flex items-center gap-2">
+                            <i class="fas fa-file-alt text-cyan-500"></i> Тарау тақырыптары (${activeChapter.topics.length})
+                        </h3>
+                        <button onclick="openTopicModal()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow flex items-center gap-1.5">
+                            <i class="fas fa-plus"></i> Жаңа тақырып + 5 тест қосу
+                        </button>
+                    </div>
+
+                    ${activeChapter.topics.length === 0 ? `
+                        <div class="p-6 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 text-center text-xs text-slate-500">
+                            Бұл тарауда әзірге тақырыптар жоқ. «Жаңа тақырып + 5 тест қосу» батырмасын басыңыз.
+                        </div>
+                    ` : `
+                        <div class="space-y-3">
+                            ${activeChapter.topics.map((t, idx) => `
+                                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <div class="font-bold text-sm truncate">${escapeHtml(t.title)}</div>
+                                        <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-1">
+                                            <span><i class="fas fa-align-left mr-1"></i> ${t.context.length} таңба мәтін</span>
+                                            <span><i class="fab fa-youtube text-rose-500 mr-1"></i> ${t.youtubeUrl ? 'Видео қосылған' : 'Видео жоқ'}</span>
+                                            <span class="text-indigo-400 font-semibold"><i class="fas fa-question-circle mr-1"></i> ${t.questions.length} тест сұрағы</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <button onclick="openTopicModal('${t.id}')" class="px-3 py-1.5 rounded-xl bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 text-xs font-semibold">
+                                            <i class="fas fa-pen mr-1"></i> Өңдеу
+                                        </button>
+                                        <button onclick="deleteTopic('${t.id}')" class="px-3 py-1.5 rounded-xl bg-rose-500/15 text-rose-500 hover:bg-rose-500/25 text-xs font-semibold">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+
+                <!-- Бөлім бойынша Қорытынды 15 Тест Блогы -->
+                <div class="p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-base font-bold text-amber-400 flex items-center gap-2">
+                            <i class="fas fa-award"></i> Бөлім бойынша қорытынды тест (15 сұрақ)
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Қазіргі күйі: <strong class="text-slate-200">${activeChapter.chapterExam.length} / 15 сұрақ</strong> дайын. Барлық тақырыптарды оқыған соң оқушы осы тестті тапсырады.
+                        </p>
+                    </div>
+                    <button onclick="openChapterExamModal()" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold shadow shrink-0">
+                        <i class="fas fa-edit mr-1"></i> 15 Тест сұрағын басқару
+                    </button>
+                </div>
+            `;
+        }
+
+        // Тарау қосу / өңдеу модаль логикасы
+        function openChapterModal(editId = null) {
+            document.getElementById('chapter-edit-id').value = editId || '';
+            if (editId) {
+                const ch = appData.chapters.find(c => c.id === editId);
+                document.getElementById('modal-chapter-title').textContent = 'Тарауды өңдеу';
+                document.getElementById('chapter-input-title').value = ch.title;
+                document.getElementById('chapter-input-desc').value = ch.description || '';
+            } else {
+                document.getElementById('modal-chapter-title').textContent = 'Жаңа тарау қосу';
+                document.getElementById('chapter-input-title').value = '';
+                document.getElementById('chapter-input-desc').value = '';
+            }
+            openModal('modal-chapter');
+        }
+
+        function saveChapter(e) {
+            e.preventDefault();
+            const editId = document.getElementById('chapter-edit-id').value;
+            const title = document.getElementById('chapter-input-title').value.trim();
+            const description = document.getElementById('chapter-input-desc').value.trim();
+
+            if (editId) {
+                const ch = appData.chapters.find(c => c.id === editId);
+                ch.title = title;
+                ch.description = description;
+                showToast('Тарау сәтті жаңартылды!');
+            } else {
+                const newChap = {
+                    id: 'chap-' + Date.now(),
+                    title,
+                    description,
+                    topics: [],
+                    chapterExam: []
+                };
+                appData.chapters.push(newChap);
+                teacherSelectedChapterId = newChap.id;
+                if (!selectedChapterId) selectedChapterId = newChap.id;
+                showToast('Жаңа тарау қосылды!');
+            }
+
+            saveAppData();
+            closeModal('modal-chapter');
+            renderTeacherMode();
+        }
+
+        function deleteChapter(chapId) {
+            showConfirmModal('Тарауды жою', 'Бұл тарау мен оның ішіндегі барлық тақырыптар жойылады. Сенімдісіз бе?', () => {
+                appData.chapters = appData.chapters.filter(c => c.id !== chapId);
+                saveAppData();
+                renderTeacherMode();
+                showToast('Тарау жойылды', 'info');
+            });
+        }
+
+        // Тақырып және 5 тест сұрағын қосу/өңдеу модаль логикасы
+        function openTopicModal(topicId = null) {
+            const chapter = appData.chapters.find(c => c.id === teacherSelectedChapterId);
+            if (!chapter) return;
+
+            document.getElementById('topic-edit-id').value = topicId || '';
+            const topic = topicId ? chapter.topics.find(t => t.id === topicId) : null;
+
+            document.getElementById('modal-topic-title').textContent = topic ? 'Тақырыпты өңдеу' : 'Жаңа тақырып және 5 тест сұрағын қосу';
+            document.getElementById('topic-input-title').value = topic ? topic.title : '';
+            document.getElementById('topic-input-youtube').value = topic ? (topic.youtubeUrl || '') : '';
+            document.getElementById('topic-input-context').value = topic ? topic.context : '';
+            previewYoutubeInModal(topic ? topic.youtubeUrl : '');
+
+            // 5 тест сұрағы өрістерін құру
+            const builder = document.getElementById('topic-questions-builder');
+            builder.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const qData = topic?.questions?.[i] || { q: '', options: ['', '', '', ''], correct: 0 };
+                builder.innerHTML += buildQuestionEditorCard('tq', i, qData);
+            }
+
+            openModal('modal-topic');
+        }
+
+        function previewYoutubeInModal(url) {
+            const box = document.getElementById('modal-yt-preview');
+            const embed = parseYoutubeEmbedUrl(url);
+            if (embed) {
+                box.classList.remove('hidden');
+                box.innerHTML = `<iframe class="w-full h-full" src="${embed}" frameborder="0" allowfullscreen></iframe>`;
+            } else {
+                box.classList.add('hidden');
+                box.innerHTML = '';
+            }
+        }
+
+        function buildQuestionEditorCard(prefix, index, qData) {
+            return `
+                <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700/80">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-indigo-400">Сұрақ #${index + 1}</span>
+                        <span class="text-[11px] text-slate-400">Дұрыс жауаптың дөңгелегін белгілеңіз</span>
+                    </div>
+                    <input type="text" id="${prefix}-q-${index}" value="${escapeHtml(qData.q)}" required placeholder="${index + 1}-сұрақтың мәтінін жазыңыз..." class="w-full px-3.5 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sm mb-3 focus:outline-none focus:border-indigo-500">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        ${[0, 1, 2, 3].map(optIdx => `
+                            <div class="flex items-center gap-2">
+                                <input type="radio" name="${prefix}-correct-${index}" value="${optIdx}" ${qData.correct === optIdx ? 'checked' : ''} class="w-4 h-4 text-emerald-500 cursor-pointer" title="Дұрыс жауап ретінде белгілеу">
+                                <input type="text" id="${prefix}-opt-${index}-${optIdx}" value="${escapeHtml(qData.options[optIdx] || '')}" required placeholder="${['A', 'B', 'C', 'D'][optIdx]} нұсқасы" class="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs focus:outline-none focus:border-indigo-500">
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function saveTopic(e) {
+            e.preventDefault();
+            const chapter = appData.chapters.find(c => c.id === teacherSelectedChapterId);
+            const editId = document.getElementById('topic-edit-id').value;
+            const title = document.getElementById('topic-input-title').value.trim();
+            const youtubeUrl = document.getElementById('topic-input-youtube').value.trim();
+            const context = document.getElementById('topic-input-context').value.trim();
+
+            const questions = [];
+            for (let i = 0; i < 5; i++) {
+                const q = document.getElementById(`tq-q-${i}`).value.trim();
+                const options = [0, 1, 2, 3].map(o => document.getElementById(`tq-opt-${i}-${o}`).value.trim());
+                const correctRadio = document.querySelector(`input[name="tq-correct-${i}"]:checked`);
+                const correct = correctRadio ? parseInt(correctRadio.value, 10) : 0;
+                questions.push({ q, options, correct });
+            }
+
+            if (editId) {
+                const topic = chapter.topics.find(t => t.id === editId);
+                topic.title = title;
+                topic.youtubeUrl = youtubeUrl;
+                topic.context = context;
+                topic.questions = questions;
+                showToast('Тақырып пен 5 тест сұрағы жаңартылды!');
+            } else {
+                const newTopic = {
+                    id: 'topic-' + Date.now(),
+                    title,
+                    youtubeUrl,
+                    context,
+                    questions
+                };
+                chapter.topics.push(newTopic);
+                if (!selectedTopicId) {
+                    selectedChapterId = chapter.id;
+                    selectedTopicId = newTopic.id;
+                }
+                showToast('Жаңа тақырып және 5 тест сұрағы сақталды!');
+            }
+
+            saveAppData();
+            closeModal('modal-topic');
+            renderTeacherMode();
+        }
+
+        function deleteTopic(topicId) {
+            const chapter = appData.chapters.find(c => c.id === teacherSelectedChapterId);
+            showConfirmModal('Тақырыпты жою', 'Бұл тақырыпты жоюға сенімдісіз бе?', () => {
+                chapter.topics = chapter.topics.filter(t => t.id !== topicId);
+                saveAppData();
+                renderTeacherMode();
+                showToast('Тақырып жойылды', 'info');
+            });
+        }
+
+        // Бөлім бойынша 15 тест сұрағын басқару модалі
+        function openChapterExamModal() {
+            const chapter = appData.chapters.find(c => c.id === teacherSelectedChapterId);
+            const builder = document.getElementById('chapter-exam-builder');
+            builder.innerHTML = '';
+
+            for (let i = 0; i < 15; i++) {
+                const qData = chapter.chapterExam?.[i] || { q: '', options: ['', '', '', ''], correct: 0 };
+                builder.innerHTML += buildQuestionEditorCard('ce', i, qData);
+            }
+            openModal('modal-chapter-exam');
+        }
+
+        function autoFillChapterExamFromTopics() {
+            const chapter = appData.chapters.find(c => c.id === teacherSelectedChapterId);
+            const pool = [];
+            chapter.topics.forEach(t => {
+                t.questions.forEach(q => pool.push(JSON.parse(JSON.stringify(q))));
+            });
+
+            if (pool.length === 0) {
+                showToast('Алдымен тақырыптарға тест сұрақтарын қосыңыз!', 'error');
+                return;
+            }
+
+            const builder = document.getElementById('chapter-exam-builder');
+            builder.innerHTML = '';
+            for (let i = 0; i < 15; i++) {
+                const qData = pool[i % pool.length];
+                builder.innerHTML += buildQuestionEditorCard('ce', i, qData);
+            }
+            showToast('Тақырып сұрақтары негізінде 15 сұрақ толтырылды!');
+        }
+
+        function saveChapterExam(e) {
+            e.preventDefault();
+            const chapter = appData.chapters.find(c => c.id === teacherSelectedChapterId);
+            const examQuestions = [];
+
+            for (let i = 0; i < 15; i++) {
+                const q = document.getElementById(`ce-q-${i}`).value.trim();
+                const options = [0, 1, 2, 3].map(o => document.getElementById(`ce-opt-${i}-${o}`).value.trim());
+                const correctRadio = document.querySelector(`input[name="ce-correct-${i}"]:checked`);
+                const correct = correctRadio ? parseInt(correctRadio.value, 10) : 0;
+                examQuestions.push({ q, options, correct });
+            }
+
+            chapter.chapterExam = examQuestions;
+            saveAppData();
+            closeModal('modal-chapter-exam');
+            renderTeacherMode();
+            showToast('Бөлім бойынша 15 қорытынды тест сұрағы сақталды!');
+        }
+
+        function confirmResetDemoData() {
+            showConfirmModal(
+                'Деректерді қалпына келтіру',
+                'Барлық өзгерістер өшіріліп, бастапқы үлгі тараулар мен тесттер қалпына келтіріледі. Жалғастырасыз ба?',
+                () => {
+                    appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                    studentProgress = { completedTopics: {}, completedExams: {} };
+                    saveAppData();
+                    saveStudentProgress();
+                    teacherSelectedChapterId = appData.chapters[0].id;
+                    selectedChapterId = appData.chapters[0].id;
+                    selectedTopicId = appData.chapters[0].topics[0].id;
+                    renderTeacherMode();
+                    showToast('Үлгі деректер сәтті қалпына келтірілді!');
+                }
+            );
+        }
+
+        function showConfirmModal(title, message, onConfirm) {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-message').textContent = message;
+            const yesBtn = document.getElementById('confirm-yes-btn');
+            yesBtn.onclick = () => {
+                closeModal('modal-confirm');
+                onConfirm();
+            };
+            openModal('modal-confirm');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // =========================================================
+        // 5. THREE.JS 3D ВИРТУАЛДЫ ФИЗИКА ЗЕРТХАНАСЫ
+        // =========================================================
+        let threeScene, threeCamera, threeRenderer;
+        let labInitialized = false;
+        let currentLabExperiment = 'pendulum';
+        let isLabPaused = false;
+        let labTime = 0;
+        let labObjects = {};
+
+        // Орбиталық камераны қолмен басқару айнымалылары
+        let camSpherical = { radius: 11, theta: 0.55, phi: 1.1 };
+        let camTarget = new THREE.Vector3(0, 1.5, 0);
+        let isDraggingCam = false;
+        let prevPointer = { x: 0, y: 0 };
+
+        // Зертхана параметрлері
+        let labParams = {
+            pendulum: { length: 3.0, gravity: 9.8, angleDeg: 35, mass: 2.0 },
+            projectile: { v0: 16, angleDeg: 45, gravity: 9.8, launched: true, t: 0, trail: [] },
+            incline: { angleDeg: 25, friction: 0.25, mass: 3.0, pos: 0, vel: 0 },
+            wave: { freq: 2.0, amp: 0.7, separation: 3.0 }
+        };
+
+        function initThreeLabIfNeeded() {
+            if (labInitialized) return;
+            const container = document.getElementById('lab-canvas-container');
+            if (!container) return;
+
+            threeScene = new THREE.Scene();
+            threeScene.background = new THREE.Color(0x0b1120);
+            threeScene.fog = new THREE.FogExp2(0x0b1120, 0.025);
+
+            const width = container.clientWidth || 800;
+            const height = container.clientHeight || 480;
+            threeCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+            updateCameraPosition();
+
+            threeRenderer = new THREE.WebGLRenderer({ antialias: true });
+            threeRenderer.setSize(width, height);
+            threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            threeRenderer.shadowMap.enabled = true;
+            container.appendChild(threeRenderer.domElement);
+
+            // Жарықтандыру
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
+            threeScene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+            dirLight.position.set(8, 14, 10);
+            dirLight.castShadow = true;
+            threeScene.add(dirLight);
+
+            const pointLight = new THREE.PointLight(0x38bdf8, 0.7, 25);
+            pointLight.position.set(-6, 6, -4);
+            threeScene.add(pointLight);
+
+            // Тінтуір және Сенсорлық (Touch) басқару оқиғалары
+            const domEl = threeRenderer.domElement;
+            domEl.addEventListener('mousedown', (e) => {
+                isDraggingCam = true;
+                prevPointer = { x: e.clientX, y: e.clientY };
+            });
+            window.addEventListener('mouseup', () => { isDraggingCam = false; });
+            window.addEventListener('mousemove', (e) => {
+                if (!isDraggingCam) return;
+                const dx = e.clientX - prevPointer.x;
+                const dy = e.clientY - prevPointer.y;
+                prevPointer = { x: e.clientX, y: e.clientY };
+                camSpherical.theta -= dx * 0.008;
+                camSpherical.phi = Math.max(0.2, Math.min(Math.PI - 0.2, camSpherical.phi - dy * 0.008));
+                updateCameraPosition();
+            });
+            domEl.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                camSpherical.radius = Math.max(4, Math.min(25, camSpherical.radius + e.deltaY * 0.008));
+                updateCameraPosition();
+            }, { passive: false });
+
+            // Touch қолдауы
+            domEl.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDraggingCam = true;
+                    prevPointer = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                }
+            }, { passive: true });
+            domEl.addEventListener('touchend', () => { isDraggingCam = false; });
+            domEl.addEventListener('touchmove', (e) => {
+                if (!isDraggingCam || e.touches.length !== 1) return;
+                const dx = e.touches[0].clientX - prevPointer.x;
+                const dy = e.touches[0].clientY - prevPointer.y;
+                prevPointer = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                camSpherical.theta -= dx * 0.01;
+                camSpherical.phi = Math.max(0.2, Math.min(Math.PI - 0.2, camSpherical.phi - dy * 0.01));
+                updateCameraPosition();
+            }, { passive: true });
+
+            window.addEventListener('resize', onLabResize);
+
+            labInitialized = true;
+            selectLabExperiment('pendulum');
+        }
+
+        function updateCameraPosition() {
+            if (!threeCamera) return;
+            const { radius, theta, phi } = camSpherical;
+            threeCamera.position.x = camTarget.x + radius * Math.sin(phi) * Math.sin(theta);
+            threeCamera.position.y = camTarget.y + radius * Math.cos(phi);
+            threeCamera.position.z = camTarget.z + radius * Math.sin(phi) * Math.cos(theta);
+            threeCamera.lookAt(camTarget);
+        }
+
+        function resetLabCamera() {
+            if (currentLabExperiment === 'projectile') {
+                camSpherical = { radius: 18, theta: 0.1, phi: 1.35 };
+                camTarget.set(6, 3, 0);
+            } else {
+                camSpherical = { radius: 10.5, theta: 0.5, phi: 1.15 };
+                camTarget.set(0, 1.8, 0);
+            }
+            updateCameraPosition();
+        }
+
+        function onLabResize() {
+            if (!labInitialized) return;
+            const container = document.getElementById('lab-canvas-container');
+            if (!container || container.clientWidth === 0) return;
+            threeCamera.aspect = container.clientWidth / container.clientHeight;
+            threeCamera.updateProjectionMatrix();
+            threeRenderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        function clearThreeSceneObjects() {
+            if (!threeScene) return;
+            const toRemove = [];
+            threeScene.traverse(obj => {
+                if (obj.userData.isLabObject) toRemove.push(obj);
+            });
+            toRemove.forEach(obj => threeScene.remove(obj));
+            labObjects = {};
+        }
+
+        function addLabMesh(mesh) {
+            mesh.userData.isLabObject = true;
+            threeScene.add(mesh);
+            return mesh;
+        }
+
+        function selectLabExperiment(expKey) {
+            currentLabExperiment = expKey;
+            isLabPaused = false;
+            labTime = 0;
+
+            // Батырмалар стилін жаңарту
+            ['pendulum', 'projectile', 'incline', 'wave'].forEach(k => {
+                const btn = document.getElementById(`lab-tab-${k}`);
+                if (k === expKey) {
+                    btn.className = 'lab-exp-btn px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-indigo-600 text-white shadow-md transition flex items-center gap-2';
+                } else {
+                    btn.className = 'lab-exp-btn px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-indigo-500/20 transition flex items-center gap-2';
+                }
+            });
+
+            if (!labInitialized) return;
+            clearThreeSceneObjects();
+            resetLabCamera();
+
+            const grid = new THREE.GridHelper(24, 24, 0x334155, 0x1e293b);
+            addLabMesh(grid);
+
+            if (expKey === 'pendulum') setupPendulumLab();
+            else if (expKey === 'projectile') setupProjectileLab();
+            else if (expKey === 'incline') setupInclineLab();
+            else if (expKey === 'wave') setupWaveLab();
+        }
+
+        // --- ТӘЖІРИБЕ 1: 3D МАТЕМАТИКАЛЫҚ МАЯТНИК ---
+        function setupPendulumLab() {
+            document.getElementById('lab-hud-title').textContent = '1. 3D Математикалық маятник';
+            document.getElementById('lab-hud-formula').textContent = 'T = 2π · √(L / g)';
+            document.getElementById('lab-explanation-box').innerHTML = `
+                <strong class="text-indigo-400">Физикалық мағынасы:</strong> Математикалық маятниктің тербеліс периоды (<em>T</em>) жіптің ұзындығына (<em>L</em>) тура пропорционал және еркін түсу үдеуіне (<em>g</em>) кері пропорционал. Жүктің массасы (<em>m</em>) тербеліс периодына әсер етпейтінін тәжірибеде тексеріп көріңіз!
+            `;
+
+            // Тірек бағанасы
+            const standMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.6, roughness: 0.3 });
+            const base = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.2, 2.5), standMat);
+            base.position.y = 0.1;
+            addLabMesh(base);
+
+            const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 5.2, 16), standMat);
+            pillar.position.set(-1.1, 2.6, 0);
+            addLabMesh(pillar);
+
+            const arm = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.12, 0.12), standMat);
+            arm.position.set(-0.4, 5.15, 0);
+            addLabMesh(arm);
+
+            // Маятник тобы (pivot нүктесінде айналады)
+            const pivot = new THREE.Group();
+            pivot.position.set(0.2, 5.1, 0);
+            addLabMesh(pivot);
+
+            const rod = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.025, 0.025, 1, 12),
+                new THREE.MeshStandardMaterial({ color: 0xe2e8f0 })
+            );
+            pivot.add(rod);
+
+            const bob = new THREE.Mesh(
+                new THREE.SphereGeometry(0.38, 32, 32),
+                new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.3, roughness: 0.2, emissive: 0x0284c7, emissiveIntensity: 0.25 })
+            );
+            pivot.add(bob);
+
+            // Жылдамдық векторы (Көрсеткі)
+            const velArrow = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), 1.2, 0xf59e0b, 0.25, 0.15);
+            pivot.add(velArrow);
+
+            labObjects = { pivot, rod, bob, velArrow };
+
+            // Басқару слайдерлері
+            const p = labParams.pendulum;
+            document.getElementById('lab-controls-panel').innerHTML = `
+                ${makeSlider('Жіптің ұзындығы (L)', 'pend-len', 1.0, 4.2, 0.1, p.length, 'м', (v) => { labParams.pendulum.length = v; })}
+                ${makeSlider('Еркін түсу үдеуі (g)', 'pend-g', 1.6, 20.0, 0.2, p.gravity, 'м/с²', (v) => { labParams.pendulum.gravity = v; })}
+                ${makeSlider('Бастапқы ауытқу бұрышы (α₀)', 'pend-ang', 5, 65, 1, p.angleDeg, '°', (v) => { labParams.pendulum.angleDeg = v; })}
+                ${makeSlider('Жүктің массасы (m)', 'pend-mass', 0.5, 5.0, 0.5, p.mass, 'кг', (v) => { labParams.pendulum.mass = v; })}
+            `;
+        }
+
+        // --- ТӘЖІРИБЕ 2: 3D КӨКЖИЕККЕ БҰРЫШ ЖАСАЙ ЛАҚТЫРЫЛҒАН ДЕНЕ ---
+        function setupProjectileLab() {
+            document.getElementById('lab-hud-title').textContent = '2. Көкжиекке бұрыш жасай лақтырылған дене';
+            document.getElementById('lab-hud-formula').textContent = 'L = (v₀² · sin 2α) / g  |  H_max = (v₀² · sin²α) / 2g';
+            document.getElementById('lab-explanation-box').innerHTML = `
+                <strong class="text-cyan-400">Физикалық мағынасы:</strong> Дене парабола траекториясымен қозғалады. Ауа кедергісі ескерілмеген жағдайда, ең алыс ұшу қашықтығы (<em>L</em>) лақтыру бұрышы <strong>α = 45°</strong> болғанда орындалады. 3D кеңістікте траектория ізін бақылаңыз!
+            `;
+
+            // Зеңбірек / Ұшыру қондырғысы
+            const launcher = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.22, 0.32, 1.3, 20),
+                new THREE.MeshStandardMaterial({ color: 0x6366f1, metalness: 0.5, roughness: 0.3 })
+            );
+            launcher.position.set(-7, 0.4, 0);
+            addLabMesh(launcher);
+
+            // Ұшатын шар
+            const ball = new THREE.Mesh(
+                new THREE.SphereGeometry(0.32, 24, 24),
+                new THREE.MeshStandardMaterial({ color: 0xf43f5e, emissive: 0xe11d48, emissiveIntensity: 0.4 })
+            );
+            addLabMesh(ball);
+
+            // Траектория сызығы
+            const trailGeo = new THREE.BufferGeometry();
+            const trailMat = new THREE.LineBasicMaterial({ color: 0x38bdf8 });
+            const trailLine = new THREE.Line(trailGeo, trailMat);
+            addLabMesh(trailLine);
+
+            labObjects = { launcher, ball, trailLine };
+            resetProjectileFlight();
+
+            const pr = labParams.projectile;
+            document.getElementById('lab-controls-panel').innerHTML = `
+                ${makeSlider('Бастапқы жылдамдық (v₀)', 'proj-v0', 6, 22, 0.5, pr.v0, 'м/с', (v) => { labParams.projectile.v0 = v; resetProjectileFlight(); })}
+                ${makeSlider('Лақтыру бұрышы (α)', 'proj-ang', 10, 85, 1, pr.angleDeg, '°', (v) => { labParams.projectile.angleDeg = v; resetProjectileFlight(); })}
+                ${makeSlider('Еркін түсу үдеуі (g)', 'proj-g', 1.6, 20.0, 0.2, pr.gravity, 'м/с²', (v) => { labParams.projectile.gravity = v; resetProjectileFlight(); })}
+            `;
+        }
+
+        function resetProjectileFlight() {
+            labParams.projectile.t = 0;
+            labParams.projectile.trail = [];
+            labParams.projectile.launched = true;
+            if (labObjects.launcher) {
+                const rad = (labParams.projectile.angleDeg * Math.PI) / 180;
+                labObjects.launcher.rotation.z = -(Math.PI / 2 - rad);
+            }
+        }
+
+        // --- ТӘЖІРИБЕ 3: 3D КӨЛБЕУ ЖАЗЫҚТЫҚ ЖӘНЕ ҮЙКЕЛІС ---
+        function setupInclineLab() {
+            document.getElementById('lab-hud-title').textContent = '3. Көлбеу жазықтықтағы қозғалыс';
+            document.getElementById('lab-hud-formula').textContent = 'a = g · (sin θ - μ · cos θ)';
+            document.getElementById('lab-explanation-box').innerHTML = `
+                <strong class="text-amber-400">Физикалық мағынасы:</strong> Көлбеу жазықтықтағы білеушеге ауырлық күші (қызыл), тіректің реакция күші (жасыл) және үйкеліс күші (сары) әрекет етеді. Егер <strong>tan θ ≤ μ</strong> болса, үйкеліс күші басым болып, дене тыныштықта қалады!
+            `;
+
+            const rampGroup = new THREE.Group();
+            addLabMesh(rampGroup);
+
+            const rampBoard = new THREE.Mesh(
+                new THREE.BoxGeometry(8, 0.25, 2.6),
+                new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6 })
+            );
+            rampGroup.add(rampBoard);
+
+            const block = new THREE.Mesh(
+                new THREE.BoxGeometry(1.0, 0.7, 1.0),
+                new THREE.MeshStandardMaterial({ color: 0x6366f1, metalness: 0.2, roughness: 0.4 })
+            );
+            rampGroup.add(block);
+
+            // Күш векторлары (Көрсеткілер)
+            const fGrav = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), new THREE.Vector3(), 1.6, 0xf43f5e, 0.25, 0.15);
+            const fNorm = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), new THREE.Vector3(), 1.4, 0x10b981, 0.25, 0.15);
+            const fFric = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(), 1.2, 0xf59e0b, 0.25, 0.15);
+            addLabMesh(fGrav);
+            rampGroup.add(fNorm);
+            rampGroup.add(fFric);
+
+            labObjects = { rampGroup, block, fGrav, fNorm, fFric };
+            resetInclineMotion();
+
+            const inc = labParams.incline;
+            document.getElementById('lab-controls-panel').innerHTML = `
+                ${makeSlider('Көлбеулік бұрышы (θ)', 'inc-ang', 5, 55, 1, inc.angleDeg, '°', (v) => { labParams.incline.angleDeg = v; resetInclineMotion(); })}
+                ${makeSlider('Үйкеліс коэффициенті (μ)', 'inc-fric', 0.0, 0.9, 0.05, inc.friction, '', (v) => { labParams.incline.friction = v; resetInclineMotion(); })}
+                ${makeSlider('Дене массасы (m)', 'inc-mass', 1.0, 10.0, 0.5, inc.mass, 'кг', (v) => { labParams.incline.mass = v; })}
+            `;
+        }
+
+        function resetInclineMotion() {
+            labParams.incline.pos = -3.0;
+            labParams.incline.vel = 0;
+        }
+
+        // --- ТӘЖІРИБЕ 4: 3D ТОЛҚЫН ИНТЕРФЕРЕНЦИЯСЫ ---
+        function setupWaveLab() {
+            document.getElementById('lab-hud-title').textContent = '4. 3D Толқындар интерференциясы';
+            document.getElementById('lab-hud-formula').textContent = 'y(x,z,t) = A·sin(k·r₁ - ωt) + A·sin(k·r₂ - ωt)';
+            document.getElementById('lab-explanation-box').innerHTML = `
+                <strong class="text-purple-400">Физикалық мағынасы:</strong> Екі когерентті толқын көзінен таралған толқындар кеңістікте қабаттасып, <strong>интерференция</strong> құбылысын тудырады. Толқын өркештері түйіскен жерде тербеліс күшейеді, ал өркеш пен ойыс кездескенде бірін-бірі өшіреді.
+            `;
+
+            const geo = new THREE.PlaneGeometry(12, 12, 64, 64);
+            geo.rotateX(-Math.PI / 2);
+            const mat = new THREE.MeshStandardMaterial({
+                color: 0x38bdf8,
+                wireframe: false,
+                metalness: 0.3,
+                roughness: 0.25,
+                side: THREE.DoubleSide
+            });
+            const waveMesh = new THREE.Mesh(geo, mat);
+            waveMesh.position.y = 1.5;
+            addLabMesh(waveMesh);
+
+            const src1 = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 16), new THREE.MeshBasicMaterial({ color: 0xf43f5e }));
+            const src2 = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 16), new THREE.MeshBasicMaterial({ color: 0xf59e0b }));
+            addLabMesh(src1);
+            addLabMesh(src2);
+
+            labObjects = { waveMesh, src1, src2 };
+
+            const w = labParams.wave;
+            document.getElementById('lab-controls-panel').innerHTML = `
+                ${makeSlider('Толқын жиілігі (ν)', 'wave-freq', 0.5, 4.5, 0.2, w.freq, 'Гц', (v) => { labParams.wave.freq = v; })}
+                ${makeSlider('Амплитуда (A)', 'wave-amp', 0.2, 1.4, 0.1, w.amp, 'м', (v) => { labParams.wave.amp = v; })}
+                ${makeSlider('Көздер арақашықтығы (d)', 'wave-sep', 1.0, 6.0, 0.2, w.separation, 'м', (v) => { labParams.wave.separation = v; })}
+            `;
+        }
+
+        function makeSlider(label, id, min, max, step, val, unit, onChange) {
+            setTimeout(() => {
+                const el = document.getElementById(id);
+                const valEl = document.getElementById(`${id}-val`);
+                if (el) {
+                    el.oninput = (e) => {
+                        const num = parseFloat(e.target.value);
+                        valEl.textContent = `${num} ${unit}`;
+                        onChange(num);
+                    };
+                }
+            }, 0);
+
+            return `
+                <div>
+                    <div class="flex justify-between text-xs font-semibold mb-1.5">
+                        <span class="text-slate-600 dark:text-slate-300">${label}</span>
+                        <span id="${id}-val" class="text-indigo-500 font-mono font-bold">${val} ${unit}</span>
+                    </div>
+                    <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}" class="w-full accent-indigo-500 cursor-pointer">
+                </div>
+            `;
+        }
+
+        function triggerLabAction() {
+            labTime = 0;
+            isLabPaused = false;
+            if (currentLabExperiment === 'projectile') resetProjectileFlight();
+            if (currentLabExperiment === 'incline') resetInclineMotion();
+            showToast('Тәжірибе басынан іске қосылды', 'info');
+        }
+
+        function toggleLabPause() {
+            isLabPaused = !isLabPaused;
+        }
+
+        // Негізгі 3D Анимация Циклі
+        let lastFrameTime = performance.now();
+        function animate3DLab(now) {
+            requestAnimationFrame(animate3DLab);
+            const dt = Math.min((now - lastFrameTime) / 1000, 0.05);
+            lastFrameTime = now;
+
+            if (!labInitialized || currentMainMode !== 'lab') return;
+
+            if (!isLabPaused) {
+                labTime += dt;
+                updateCurrentLabPhysics(dt);
+            }
+
+            threeRenderer.render(threeScene, threeCamera);
+        }
+
+        function updateCurrentLabPhysics(dt) {
+            const metricsEl = document.getElementById('lab-live-metrics');
+
+            if (currentLabExperiment === 'pendulum' && labObjects.pivot) {
+                const { length, gravity, angleDeg, mass } = labParams.pendulum;
+                const omega = Math.sqrt(gravity / length);
+                const period = (2 * Math.PI) / omega;
+                const thetaMax = (angleDeg * Math.PI) / 180;
+                const theta = thetaMax * Math.cos(omega * labTime);
+                const angVel = -thetaMax * omega * Math.sin(omega * labTime);
+
+                labObjects.pivot.rotation.z = theta;
+                labObjects.rod.scale.y = length;
+                labObjects.rod.position.y = -length / 2;
+
+                const bobScale = 0.75 + mass * 0.12;
+                labObjects.bob.scale.set(bobScale, bobScale, bobScale);
+                labObjects.bob.position.y = -length;
+
+                // Жылдамдық векторы
+                labObjects.velArrow.position.set(0, -length, 0);
+                const dirX = angVel >= 0 ? 1 : -1;
+                labObjects.velArrow.setDirection(new THREE.Vector3(dirX, 0, 0));
+                labObjects.velArrow.setLength(Math.min(2.2, Math.abs(angVel * length) * 0.4 + 0.1));
+
+                metricsEl.innerHTML = `
+                    <div>Период T = <span class="text-cyan-400">${period.toFixed(2)} с</span></div>
+                    <div>Жиілік ν = <span class="text-emerald-400">${(1 / period).toFixed(2)} Гц</span></div>
+                    <div>Бұрыш θ = <span class="text-amber-400">${((theta * 180) / Math.PI).toFixed(1)}°</span></div>
+                `;
+            }
+
+            else if (currentLabExperiment === 'projectile' && labObjects.ball) {
+                const { v0, angleDeg, gravity } = labParams.projectile;
+                const rad = (angleDeg * Math.PI) / 180;
+                const vx = v0 * Math.cos(rad);
+                const vy = v0 * Math.sin(rad);
+
+                const tFlight = (2 * vy) / gravity;
+                const maxRange = vx * tFlight;
+                const maxHeight = (vy * vy) / (2 * gravity);
+
+                if (labParams.projectile.launched) {
+                    labParams.projectile.t += dt * 1.1;
+                    const t = labParams.projectile.t;
+                    const x = -7 + vx * t * 0.55;
+                    const y = 0.35 + (vy * t - 0.5 * gravity * t * t) * 0.55;
+
+                    if (y <= 0.32 && t > 0.1) {
+                        labParams.projectile.launched = false;
+                        labObjects.ball.position.y = 0.32;
+                    } else {
+                        labObjects.ball.position.set(x, y, 0);
+                        labParams.projectile.trail.push(new THREE.Vector3(x, y, 0));
+                        labObjects.trailLine.geometry.setFromPoints(labParams.projectile.trail);
+                    }
+                }
+
+                metricsEl.innerHTML = `
+                    <div>Ұшу қашықтығы L = <span class="text-cyan-400">${maxRange.toFixed(1)} м</span></div>
+                    <div>Макс. биіктік H = <span class="text-emerald-400">${maxHeight.toFixed(1)} м</span></div>
+                    <div>Ұшу уақыты t = <span class="text-amber-400">${tFlight.toFixed(2)} с</span></div>
+                `;
+            }
+
+            else if (currentLabExperiment === 'incline' && labObjects.rampGroup) {
+                const { angleDeg, friction, mass } = labParams.incline;
+                const rad = (angleDeg * Math.PI) / 180;
+                const g = 9.8;
+
+                labObjects.rampGroup.position.set(0, 2.3, 0);
+                labObjects.rampGroup.rotation.z = rad;
+
+                // a = g * (sin(θ) - μ * cos(θ))
+                const sinT = Math.sin(rad);
+                const cosT = Math.cos(rad);
+                let accel = g * (sinT - friction * cosT);
+                if (accel < 0) accel = 0;
+
+                labParams.incline.vel += accel * dt;
+                labParams.incline.pos += labParams.incline.vel * dt * 0.7;
+
+                if (labParams.incline.pos > 3.2) {
+                    resetInclineMotion();
+                }
+
+                const bx = -labParams.incline.pos;
+                labObjects.block.position.set(bx, 0.48, 0);
+
+                // Векторларды жаңарту
+                const worldBlockPos = new THREE.Vector3(bx, 0.48, 0);
+                labObjects.rampGroup.localToWorld(worldBlockPos);
+                labObjects.fGrav.position.copy(worldBlockPos);
+                labObjects.fGrav.setLength(0.8 + mass * 0.12);
+
+                labObjects.fNorm.position.set(bx, 0.48, 0);
+                labObjects.fNorm.setLength((0.8 + mass * 0.12) * cosT);
+
+                labObjects.fFric.position.set(bx, 0.3, 0);
+                labObjects.fFric.setLength(Math.max(0.1, friction * 1.8));
+
+                metricsEl.innerHTML = `
+                    <div>Үдеу a = <span class="text-cyan-400">${accel.toFixed(2)} м/с²</span></div>
+                    <div>Жылдамдық v = <span class="text-emerald-400">${labParams.incline.vel.toFixed(2)} м/с</span></div>
+                    <div>Күйі: <span class="text-amber-400">${accel > 0 ? 'Сырғанауда' : 'Тыныштықта (F_үйк ≥ F_сырғ)'}</span></div>
+                `;
+            }
+
+            else if (currentLabExperiment === 'wave' && labObjects.waveMesh) {
+                const { freq, amp, separation } = labParams.wave;
+                const posAttr = labObjects.waveMesh.geometry.attributes.position;
+                const s1x = -separation / 2;
+                const s2x = separation / 2;
+
+                labObjects.src1.position.set(s1x, 1.5 + amp, 0);
+                labObjects.src2.position.set(s2x, 1.5 + amp, 0);
+
+                for (let i = 0; i < posAttr.count; i++) {
+                    const x = posAttr.getX(i);
+                    const z = posAttr.getZ(i);
+                    const d1 = Math.sqrt((x - s1x) ** 2 + z ** 2);
+                    const d2 = Math.sqrt((x - s2x) ** 2 + z ** 2);
+                    const y = amp * 0.5 * (Math.sin(2.5 * d1 - labTime * freq * 3) + Math.sin(2.5 * d2 - labTime * freq * 3));
+                    posAttr.setY(i, y);
+                }
+                posAttr.needsUpdate = true;
+                labObjects.waveMesh.geometry.computeVertexNormals();
+
+                metricsEl.innerHTML = `
+                    <div>Жиілік ν = <span class="text-cyan-400">${freq.toFixed(1)} Гц</span></div>
+                    <div>Макс. амплитуда 2A = <span class="text-emerald-400">${(amp * 2).toFixed(1)} м</span></div>
+                    <div>Көздер арасы d = <span class="text-amber-400">${separation.toFixed(1)} м</span></div>
+                `;
+            }
+        }
+
+        // =========================================================
+        // 6. БЕТ ЖҮКТЕЛГЕНДЕ ІСКЕ ҚОСУ (WINDOW ONLOAD)
+        // =========================================================
+        window.onload = function () {
+            renderStudentMode();
+            requestAnimationFrame(animate3DLab);
+        };
+    </script>
+</body>
+</html>

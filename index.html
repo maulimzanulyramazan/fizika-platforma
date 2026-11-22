@@ -320,4 +320,791 @@
           {
             id: 't-1-1',
             title: '1.1. Теңүдемелі түзусызықты қозғалыс. Үдеу',
-            context: 'Теңүдемелі қозғалыс — дененің жылдамдығы кез келген тең уақыт аралықтарында бірдей шамаға өзгеретін қозғалыс.\n\nҮдеу (a) — жылдамдықтың өзгеру шапшаңдығын сипаттайтын векторлық физикалық шама. ХБЖ (СИ) жүйесінде өлшем бірлігі: м/с².\n\nНегізгі формулалар:\n• Үдеу формуласы: a = (v - v₀) / t\n• Кез келген уақыт мезетіндегі жылдамдық: v = v₀ + a·t\n• Орын ауыстыру формуласы: S = v₀·t + (a·t²) / 2\n• У
+            context: 'Теңүдемелі қозғалыс — дененің жылдамдығы кез келген тең уақыт аралықтарында бірдей шамаға өзгеретін қозғалыс.\n\nҮдеу (a) — жылдамдықтың өзгеру шапшаңдығын сипаттайтын векторлық физикалық шама. ХБЖ (СИ) жүйесінде өлшем бірлігі: м/с².\n\nНегізгі формулалар:\n• Үдеу формуласы: a = (v - v₀) / t\n• Кез келген уақыт мезетіндегі жылдамдық: v = v₀ + a·t\n• Орын ауыстыру формуласы: S = v₀·t + (a·t²) / 2\n• Уақытқа тәуелсіз орын ауыстыру: v² - v₀² = 2·a·S',
+            youtubeUrl: 'https://www.youtube.com/watch?v=ZM8ECpBuQYE',
+            quiz: [
+              { q: 'Үдеудің ХБЖ (СИ) жүйесіндегі өлшем бірлігі қандай?', options: ['м/с', 'м/с²', 'Н·с', 'кг·м/с'], answer: 1 },
+              { q: 'Бастапқы жылдамдығы 4 м/с дене 2 м/с² үдеумен 3 с қозғалса, соңғы жылдамдығы неге тең?', options: ['6 м/с', '8 м/с', '10 м/с', '12 м/с'], answer: 2 },
+              { q: 'Тыныштық күйінен 4 м/с² үдеумен қозғалған дене 2 секундта қандай жол жүреді?', options: ['4 м', '8 м', '16 м', '2 м'], answer: 1 },
+              { q: 'Теңбаяулайтын қозғалыста үдеу векторы мен жылдамдық векторы қалай бағытталады?', options: ['Бағыттас', 'Қарама-қарсы', 'Перпендикуляр', 'Үдеу нөлге тең'], answer: 1 },
+              { q: 'Уақытқа тәуелсіз орын ауыстыру формуласын көрсетіңіз:', options: ['S = v·t', 'v² - v₀² = 2aS', 'a = v/t', 'F = m·a'], answer: 1 }
+            ]
+          },
+          {
+            id: 't-1-2',
+            title: '1.2. Ньютонның қозғалыс заңдары',
+            context: 'Ньютонның бірінші заңы (инерция заңы): Егер денеге басқа денелер әрекет етпесе немесе олардың әрекеті теңгерілген болса, дене өзінің тыныштық күйін немесе бірқалыпты түзусызықты қозғалысын сақтайды.\n\nНьютонның екінші заңы: Дененің алатын үдеуі оған әрекет ететін теңәрекетті күшке тура пропорционал, ал дененің массасына кері пропорционал: F = m·a.\n\nНьютонның үшінші заңы: Әрекет етуші күшке әрқашан тең қарсы әрекет етуші күш бар болады: F₁ = -F₂.',
+            youtubeUrl: 'https://www.youtube.com/watch?v=kKKM8Y-u7ds',
+            quiz: [
+              { q: 'Ньютонның екінші заңының формуласы:', options: ['F = m·a', 'F = k·x', 'p = m·v', 'A = F·S'], answer: 0 },
+              { q: 'Массасы 5 кг денеге 20 Н күш әрекет етсе, дене қандай үдеу алады?', options: ['100 м/с²', '4 м/с²', '0,25 м/с²', '15 м/с²'], answer: 1 },
+              { q: 'Инерция заңы Ньютонның нешінші заңы?', options: ['Бірінші', 'Екінші', 'Үшінші', 'Бүкіләлемдік тартылыс'], answer: 0 },
+              { q: 'Күштің өлшем бірлігі 1 Ньютон неге тең?', options: ['1 кг·м/с', '1 кг·м/с²', '1 кг/м³', '1 Дж/с'], answer: 1 },
+              { q: 'Ньютонның үшінші заңындағы күштер неліктен бірін-бірі теңгермейді?', options: ['Шамалары әртүрлі', 'Әртүрлі денелерге түсірілген', 'Бір бағытта бағытталған', 'Тек тыныштықта орындалады'], answer: 1 }
+            ]
+          }
+        ],
+        chapterQuiz: Array.from({ length: 15 }, (_, i) => ({
+          q: `Механика бөлімі бойынша қорытынды сұрақ №${i + 1}: Дененің үдеуі 2 м/с², массасы ${i + 1} кг болса, теңәрекетті күш неге тең?`,
+          options: [`${(i + 1) * 2} Н`, `${i + 3} Н`, `${(i + 1) * 4} Н`, `${i + 1} Н`],
+          answer: 0
+        }))
+      }
+    ];
+
+    // ================= КҮЙ (STATE) =================
+    let currentUser = null;
+    let courses = [];
+    let selectedChapterId = null;
+    let selectedTopicId = null;
+    let activeChapterExamId = null;
+    let studentCompletedResults = [];
+
+    // ================= АВТОРИЗАЦИЯ =================
+    async function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+      const errEl = document.getElementById('login-error');
+      const btn = document.getElementById('login-btn');
+
+      errEl.classList.add('hidden');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Тексерілуде...';
+
+      try {
+        const users = await sbFetch(`users?username=eq.${encodeURIComponent(username)}&password=eq.${encodeURIComponent(password)}&select=*`);
+        if (!users || users.length === 0) {
+          throw new Error('Логин немесе пароль қате!');
+        }
+        currentUser = users[0];
+        localStorage.setItem('fizikalab_user', JSON.stringify(currentUser));
+        await initPlatformAfterLogin();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Кіру</span><i class="fas fa-arrow-right"></i>';
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      localStorage.removeItem('fizikalab_user');
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('nav-teacher').style.display = 'none';
+    }
+
+    async function initPlatformAfterLogin() {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('user-badge').textContent = `${currentUser.full_name} (${currentUser.role === 'teacher' ? 'Мұғалім' : 'Оқушы'})`;
+
+      // Тек мұғалімге ғана Мұғалім панелін көрсету
+      const teacherNav = document.getElementById('nav-teacher');
+      if (currentUser.role === 'teacher') {
+        teacherNav.style.display = 'flex';
+      } else {
+        teacherNav.style.display = 'none';
+      }
+
+      await loadCoursesFromCloud();
+      await loadStudentProgress();
+
+      if (courses.length > 0) {
+        selectedChapterId = courses[0].id;
+        if (courses[0].topics.length > 0) {
+          selectedTopicId = courses[0].topics[0].id;
+        }
+      }
+
+      renderStudentSidebar();
+      renderStudentContent();
+      if (currentUser.role === 'teacher') {
+        renderTeacherCoursesEditor();
+        loadTeacherResults();
+        loadStudentsList();
+      }
+    }
+
+    // ================= ДЕРЕКҚОРМЕН ЖҰМЫС =================
+    async function loadCoursesFromCloud() {
+      try {
+        const rows = await sbFetch('course_data?id=eq.1&select=data');
+        if (rows && rows.length > 0 && Array.isArray(rows[0].data) && rows[0].data.length > 0) {
+          courses = rows[0].data;
+        } else {
+          courses = JSON.parse(JSON.stringify(DEFAULT_COURSES));
+          // Бастапқы үлгіні базаға сақтап қою
+          await sbFetch('course_data', {
+            method: 'POST',
+            headers: { 'Prefer': 'resolution=merge-duplicates' },
+            body: JSON.stringify({ id: 1, data: courses })
+          });
+        }
+      } catch (e) {
+        console.warn('Ортақ курс жүктелмеді, әдепкі курс қолданылды:', e);
+        courses = JSON.parse(JSON.stringify(DEFAULT_COURSES));
+      }
+    }
+
+    async function saveCoursesToCloud() {
+      const btn = document.getElementById('save-cloud-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Сақталуда...';
+      try {
+        await sbFetch('course_data', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates' },
+          body: JSON.stringify({ id: 1, data: courses, updated_at: new Date().toISOString() })
+        });
+        alert('Барлық тараулар мен тесттер сәтті сақталды! Оқушыларға бірден көрінеді.');
+        renderStudentSidebar();
+        renderStudentContent();
+      } catch (e) {
+        alert('Сақтау қатесі: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-1"></i> Барлық оқушыларға сақтау';
+      }
+    }
+
+    async function loadStudentProgress() {
+      if (!currentUser) return;
+      try {
+        studentCompletedResults = await sbFetch(`test_results?user_id=eq.${currentUser.id}&select=*`) || [];
+      } catch (e) {
+        studentCompletedResults = [];
+      }
+    }
+
+    async function saveTestResultToCloud(chapterTitle, topicTitle, testType, score, total) {
+      if (!currentUser) return;
+      try {
+        await sbFetch('test_results', {
+          method: 'POST',
+          body: JSON.stringify({
+            user_id: currentUser.id,
+            chapter_title: chapterTitle,
+            topic_title: topicTitle,
+            test_type: testType,
+            score: score,
+            total: total
+          })
+        });
+        await loadStudentProgress();
+        renderStudentSidebar();
+      } catch (e) {
+        console.error('Нәтижені сақтау қатесі:', e);
+      }
+    }
+
+    // ================= НАВИГАЦИЯ =================
+    function switchMainMode(mode) {
+      if (mode === 'teacher' && (!currentUser || currentUser.role !== 'teacher')) return;
+
+      ['student', 'lab', 'teacher'].forEach(m => {
+        document.getElementById('view-' + m).classList.add('hidden');
+        const btn = document.getElementById('nav-' + m);
+        if (btn) {
+          btn.classList.remove('bg-indigo-600', 'text-white', 'shadow');
+          btn.classList.add('text-slate-600', 'dark:text-slate-300');
+        }
+      });
+
+      document.getElementById('view-' + mode).classList.remove('hidden');
+      const activeBtn = document.getElementById('nav-' + mode);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow');
+        activeBtn.classList.remove('text-slate-600', 'dark:text-slate-300');
+      }
+
+      if (mode === 'lab') {
+        initThreeLab();
+      }
+    }
+
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+    }
+
+    function toggleSidebar() {
+      const sb = document.getElementById('student-sidebar');
+      sb.classList.toggle('hidden');
+    }
+
+    // ================= ОҚУШЫ ИНТЕРФЕЙСІ =================
+    function getYouTubeEmbedUrl(url) {
+      if (!url) return '';
+      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?/\s]+)/);
+      return match ? `https://www.youtube.com/embed/${match[1]}` : '';
+    }
+
+    function isTopicPassed(topicTitle) {
+      return studentCompletedResults.some(r => r.test_type === 'topic_5' && r.topic_title === topicTitle && r.score >= 3);
+    }
+
+    function isChapterExamPassed(chapterTitle) {
+      return studentCompletedResults.some(r => r.test_type === 'chapter_15' && r.chapter_title === chapterTitle && r.score >= 9);
+    }
+
+    function renderStudentSidebar() {
+      const list = document.getElementById('chapters-sidebar-list');
+      let totalTopics = 0;
+      let passedTopics = 0;
+
+      list.innerHTML = courses.map(ch => {
+        const chPassed = isChapterExamPassed(ch.title);
+        const topicsHtml = ch.topics.map(t => {
+          totalTopics++;
+          const passed = isTopicPassed(t.title);
+          if (passed) passedTopics++;
+          const active = !activeChapterExamId && selectedTopicId === t.id;
+          return `
+            <button onclick="selectTopic('${ch.id}', '${t.id}')"
+              class="w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between gap-2 transition ${active ? 'bg-indigo-600 text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'}">
+              <span class="truncate">${t.title}</span>
+              ${passed ? '<i class="fas fa-check-circle text-emerald-400 shrink-0"></i>' : '<i class="far fa-circle text-slate-400 shrink-0"></i>'}
+            </button>
+          `;
+        }).join('');
+
+        const examActive = activeChapterExamId === ch.id;
+        return `
+          <div class="space-y-1.5">
+            <div class="text-xs font-bold text-indigo-400 px-1">${ch.title}</div>
+            <div class="space-y-1">${topicsHtml}</div>
+            <button onclick="selectChapterExam('${ch.id}')"
+              class="w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between gap-2 border ${examActive ? 'bg-amber-500/20 border-amber-500 text-amber-300' : 'border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-indigo-500/40'}">
+              <span><i class="fas fa-trophy mr-1.5 text-amber-400"></i>Бөлім тесті (15 сұрақ)</span>
+              ${chPassed ? '<i class="fas fa-check-circle text-emerald-400"></i>' : ''}
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      const pct = totalTopics > 0 ? Math.round((passedTopics / totalTopics) * 100) : 0;
+      document.getElementById('progress-text').textContent = `${pct}% (${passedTopics}/${totalTopics})`;
+      document.getElementById('progress-bar').style.width = `${pct}%`;
+    }
+
+    function selectTopic(chapterId, topicId) {
+      selectedChapterId = chapterId;
+      selectedTopicId = topicId;
+      activeChapterExamId = null;
+      renderStudentSidebar();
+      renderStudentContent();
+    }
+
+    function selectChapterExam(chapterId) {
+      selectedChapterId = chapterId;
+      activeChapterExamId = chapterId;
+      renderStudentSidebar();
+      renderStudentContent();
+    }
+
+    function renderStudentContent() {
+      const area = document.getElementById('student-content-area');
+      const chapter = courses.find(c => c.id === selectedChapterId);
+      if (!chapter) {
+        area.innerHTML = '<div class="p-8 text-center text-slate-400">Тараулар әлі қосылмаған.</div>';
+        return;
+      }
+
+      // Бөлім бойынша 15 сұрақтық тест
+      if (activeChapterExamId) {
+        const questions = chapter.chapterQuiz || [];
+        area.innerHTML = `
+          <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-6">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-amber-400">${chapter.title}</span>
+              <h2 class="text-2xl font-extrabold mt-1">Бөлім бойынша қорытынды тест (${questions.length} сұрақ)</h2>
+            </div>
+            <form onsubmit="submitQuiz(event, 'chapter_15', '${escapeHtml(chapter.title)}', 'Бөлім бойынша қорытынды тест')" class="space-y-5">
+              ${questions.map((q, idx) => `
+                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 space-y-3">
+                  <p class="font-bold text-sm">${idx + 1}. ${q.q}</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    ${q.options.map((opt, oIdx) => `
+                      <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-indigo-500 text-xs">
+                        <input type="radio" name="q_${idx}" value="${oIdx}" required class="accent-indigo-600" />
+                        <span>${opt}</span>
+                      </label>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+              <button type="submit" class="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-sm">
+                Қорытынды тестті аяқтау
+              </button>
+            </form>
+            <div id="quiz-result-box" class="hidden"></div>
+          </div>
+        `;
+        return;
+      }
+
+      // Тақырып мазмұны және 5 сұрақтық тест
+      const topic = chapter.topics.find(t => t.id === selectedTopicId);
+      if (!topic) return;
+      const embedUrl = getYouTubeEmbedUrl(topic.youtubeUrl);
+
+      area.innerHTML = `
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm space-y-6">
+          <div>
+            <span class="text-xs font-bold text-indigo-400">${chapter.title}</span>
+            <h2 class="text-2xl font-extrabold mt-1">${topic.title}</h2>
+          </div>
+
+          <div class="space-y-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Теориялық түсіндірме (Контекст)</h3>
+            <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 text-sm leading-relaxed whitespace-pre-line">${topic.context}</div>
+          </div>
+
+          ${embedUrl ? `
+            <div class="space-y-2">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-rose-400">Бейнесабақ</h3>
+              <div class="aspect-video rounded-2xl overflow-hidden border border-slate-800 bg-black">
+                <iframe class="w-full h-full" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
+            <h3 class="text-lg font-extrabold flex items-center gap-2">
+              <i class="fas fa-tasks text-indigo-400"></i>
+              <span>Тақырып бойынша бекіту тесті (${topic.quiz.length} сұрақ)</span>
+            </h3>
+            <form onsubmit="submitQuiz(event, 'topic_5', '${escapeHtml(chapter.title)}', '${escapeHtml(topic.title)}')" class="space-y-4">
+              ${topic.quiz.map((q, idx) => `
+                <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 space-y-3">
+                  <p class="font-bold text-sm">${idx + 1}. ${q.q}</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    ${q.options.map((opt, oIdx) => `
+                      <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-indigo-500 text-xs">
+                        <input type="radio" name="q_${idx}" value="${oIdx}" required class="accent-indigo-600" />
+                        <span>${opt}</span>
+                      </label>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+              <button type="submit" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-500/20">
+                Тестті тексеру және сақтау
+              </button>
+            </form>
+            <div id="quiz-result-box" class="hidden"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function submitQuiz(e, testType, chapterTitle, topicTitle) {
+      e.preventDefault();
+      const chapter = courses.find(c => c.id === selectedChapterId);
+      const questions = testType === 'chapter_15'
+        ? chapter.chapterQuiz
+        : chapter.topics.find(t => t.id === selectedTopicId).quiz;
+
+      let score = 0;
+      questions.forEach((q, idx) => {
+        const chosen = document.querySelector(`input[name="q_${idx}"]:checked`);
+        if (chosen && parseInt(chosen.value, 10) === q.answer) {
+          score++;
+        }
+      });
+
+      const box = document.getElementById('quiz-result-box');
+      const pct = Math.round((score / questions.length) * 100);
+      box.classList.remove('hidden');
+      box.innerHTML = `
+        <div class="p-4 rounded-2xl ${pct >= 60 ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300' : 'bg-amber-500/15 border-amber-500/30 text-amber-300'} border">
+          <p class="font-extrabold text-base">Нәтиже: ${score} / ${questions.length} (${pct}%)</p>
+          <p class="text-xs mt-1">Нәтижеңіз мұғалім журналына сәтті жіберілді.</p>
+        </div>
+      `;
+
+      await saveTestResultToCloud(chapterTitle, topicTitle, testType, score, questions.length);
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    // ================= МҰҒАЛІМ ПАНЕЛІ =================
+    function switchTeacherTab(tab) {
+      ['results', 'students', 'courses'].forEach(t => {
+        document.getElementById('teacher-panel-' + t).classList.add('hidden');
+        const btn = document.getElementById('ttab-' + t);
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.add('bg-slate-100', 'dark:bg-slate-800');
+      });
+      document.getElementById('teacher-panel-' + tab).classList.remove('hidden');
+      const active = document.getElementById('ttab-' + tab);
+      active.classList.add('bg-indigo-600', 'text-white');
+      active.classList.remove('bg-slate-100', 'dark:bg-slate-800');
+
+      if (tab === 'results') loadTeacherResults();
+      if (tab === 'students') loadStudentsList();
+      if (tab === 'courses') renderTeacherCoursesEditor();
+    }
+
+    async function loadTeacherResults() {
+      const tbody = document.getElementById('results-table-body');
+      tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-slate-400">Жүктелуде...</td></tr>';
+      try {
+        const [results, users] = await Promise.all([
+          sbFetch('test_results?select=*&order=completed_at.desc'),
+          sbFetch('users?select=id,full_name,username')
+        ]);
+        const userMap = {};
+        (users || []).forEach(u => userMap[u.id] = `${u.full_name} (@${u.username})`);
+
+        if (!results || results.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">Әзірге тест тапсырылмаған.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = results.map(r => {
+          const pct = Math.round((r.score / r.total) * 100);
+          const dateStr = new Date(r.completed_at).toLocaleString('kk-KZ');
+          return `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-850/60">
+              <td class="py-3 px-3 font-semibold">${userMap[r.user_id] || 'Белгісіз'}</td>
+              <td class="py-3 px-3 text-xs text-slate-400">${r.chapter_title}</td>
+              <td class="py-3 px-3 text-xs">${r.topic_title}</td>
+              <td class="py-3 px-3 text-xs">
+                <span class="px-2 py-0.5 rounded-lg ${r.test_type === 'chapter_15' ? 'bg-amber-500/20 text-amber-300' : 'bg-indigo-500/20 text-indigo-300'}">
+                  ${r.test_type === 'chapter_15' ? 'Бөлім (15)' : 'Тақырып (5)'}
+                </span>
+              </td>
+              <td class="py-3 px-3 font-bold ${pct >= 60 ? 'text-emerald-400' : 'text-rose-400'}">${r.score}/${r.total} (${pct}%)</td>
+              <td class="py-3 px-3 text-xs text-slate-400">${dateStr}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-rose-400">Қате: ${e.message}</td></tr>`;
+      }
+    }
+
+    async function loadStudentsList() {
+      const tbody = document.getElementById('students-table-body');
+      try {
+        const users = await sbFetch('users?select=*&order=created_at.asc');
+        tbody.innerHTML = (users || []).map(u => `
+          <tr>
+            <td class="py-2.5 px-3 font-semibold">${u.full_name}</td>
+            <td class="py-2.5 px-3 font-mono text-xs text-cyan-400">${u.username}</td>
+            <td class="py-2.5 px-3 font-mono text-xs">${u.password}</td>
+            <td class="py-2.5 px-3 text-xs">${u.role === 'teacher' ? 'Мұғалім' : 'Оқушы'}</td>
+            <td class="py-2.5 px-3">
+              ${u.role !== 'teacher' ? `<button onclick="deleteUser('${u.id}')" class="text-xs text-rose-400 hover:underline">Өшіру</button>` : '—'}
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-3 text-rose-400">${e.message}</td></tr>`;
+      }
+    }
+
+    async function addStudentAccount(e) {
+      e.preventDefault();
+      const full_name = document.getElementById('new-stu-name').value.trim();
+      const username = document.getElementById('new-stu-user').value.trim();
+      const password = document.getElementById('new-stu-pass').value.trim();
+      try {
+        await sbFetch('users', {
+          method: 'POST',
+          body: JSON.stringify({ full_name, username, password, role: 'student' })
+        });
+        document.getElementById('new-stu-name').value = '';
+        document.getElementById('new-stu-user').value = '';
+        document.getElementById('new-stu-pass').value = '';
+        loadStudentsList();
+      } catch (e) {
+        alert('Оқушы қосу қатесі (логин бос емес болуы мүмкін): ' + e.message);
+      }
+    }
+
+    async function deleteUser(id) {
+      if (!confirm('Бұл оқушыны өшіресіз бе?')) return;
+      await sbFetch(`users?id=eq.${id}`, { method: 'DELETE' });
+      loadStudentsList();
+    }
+
+    // ================= САБАҚТАР РЕДАКТОРЫ =================
+    function addChapter() {
+      const inp = document.getElementById('new-chapter-title');
+      const title = inp.value.trim();
+      if (!title) return;
+      courses.push({
+        id: 'ch-' + Date.now(),
+        title,
+        topics: [],
+        chapterQuiz: Array.from({ length: 15 }, (_, i) => ({
+          q: `${title} — қорытынды сұрақ №${i + 1}`,
+          options: ['А нұсқасы', 'Ә нұсқасы', 'Б нұсқасы', 'В нұсқасы'],
+          answer: 0
+        }))
+      });
+      inp.value = '';
+      renderTeacherCoursesEditor();
+    }
+
+    function addTopicToChapter(chIdx) {
+      courses[chIdx].topics.push({
+        id: 't-' + Date.now(),
+        title: `${chIdx + 1}.${courses[chIdx].topics.length + 1}. Жаңа тақырып`,
+        context: 'Тақырып бойынша теориялық мәтін мен формулаларды осында жазыңыз...',
+        youtubeUrl: '',
+        quiz: Array.from({ length: 5 }, (_, i) => ({
+          q: `Тақырыптық тест сұрағы №${i + 1}`,
+          options: ['1-нұсқа', '2-нұсқа', '3-нұсқа', '4-нұсқа'],
+          answer: 0
+        }))
+      });
+      renderTeacherCoursesEditor();
+    }
+
+    function renderTeacherCoursesEditor() {
+      const container = document.getElementById('teacher-chapters-editor');
+      container.innerHTML = courses.map((ch, chIdx) => `
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-4 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+            <input type="text" value="${escapeHtml(ch.title)}" onchange="courses[${chIdx}].title = this.value"
+              class="font-extrabold text-base bg-transparent border-b border-dashed border-slate-600 focus:outline-none w-full sm:w-2/3" />
+            <div class="flex gap-2">
+              <button onclick="addTopicToChapter(${chIdx})" class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold">+ Тақырып қосу</button>
+              <button onclick="courses.splice(${chIdx}, 1); renderTeacherCoursesEditor()" class="px-3 py-1.5 rounded-xl bg-rose-500/15 text-rose-400 text-xs font-bold">Тарауды өшіру</button>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            ${ch.topics.map((t, tIdx) => `
+              <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                  <input type="text" value="${escapeHtml(t.title)}" onchange="courses[${chIdx}].topics[${tIdx}].title = this.value"
+                    class="font-bold text-sm bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-700 w-full" />
+                  <button onclick="courses[${chIdx}].topics.splice(${tIdx}, 1); renderTeacherCoursesEditor()" class="text-xs text-rose-400 px-2">Өшіру</button>
+                </div>
+                <textarea rows="3" onchange="courses[${chIdx}].topics[${tIdx}].context = this.value"
+                  class="w-full p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-700 text-xs" placeholder="Теориялық мәтін">${t.context}</textarea>
+                <input type="text" value="${escapeHtml(t.youtubeUrl || '')}" onchange="courses[${chIdx}].topics[${tIdx}].youtubeUrl = this.value"
+                  class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-700 text-xs" placeholder="YouTube сілтемесі (https://www.youtube.com/watch?v=...)" />
+
+                <details class="text-xs">
+                  <summary class="cursor-pointer font-bold text-indigo-400 py-1">5 тест сұрағын өңдеу</summary>
+                  <div class="space-y-3 pt-2">
+                    ${t.quiz.map((q, qIdx) => `
+                      <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-800 space-y-2">
+                        <input type="text" value="${escapeHtml(q.q)}" onchange="courses[${chIdx}].topics[${tIdx}].quiz[${qIdx}].q = this.value"
+                          class="w-full px-2.5 py-1.5 rounded-lg bg-slate-850 border border-slate-700 font-semibold" />
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          ${q.options.map((opt, oIdx) => `
+                            <div class="flex items-center gap-1.5">
+                              <input type="radio" name="ed_${chIdx}_${tIdx}_${qIdx}" ${q.answer === oIdx ? 'checked' : ''}
+                                onchange="courses[${chIdx}].topics[${tIdx}].quiz[${qIdx}].answer = ${oIdx}" />
+                              <input type="text" value="${escapeHtml(opt)}"
+                                onchange="courses[${chIdx}].topics[${tIdx}].quiz[${qIdx}].options[${oIdx}] = this.value"
+                                class="w-full px-2 py-1 rounded bg-slate-850 border border-slate-700" />
+                            </div>
+                          `).join('')}
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </details>
+              </div>
+            `).join('')}
+          </div>
+
+          <details class="text-xs pt-2">
+            <summary class="cursor-pointer font-bold text-amber-400">Бөлім бойынша 15 қорытынды тест сұрағын өңдеу</summary>
+            <div class="space-y-3 pt-2">
+              ${(ch.chapterQuiz || []).map((q, qIdx) => `
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-800 space-y-2">
+                  <input type="text" value="${escapeHtml(q.q)}" onchange="courses[${chIdx}].chapterQuiz[${qIdx}].q = this.value"
+                    class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 font-semibold" />
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    ${q.options.map((opt, oIdx) => `
+                      <div class="flex items-center gap-1.5">
+                        <input type="radio" name="ched_${chIdx}_${qIdx}" ${q.answer === oIdx ? 'checked' : ''}
+                          onchange="courses[${chIdx}].chapterQuiz[${qIdx}].answer = ${oIdx}" />
+                        <input type="text" value="${escapeHtml(opt)}"
+                          onchange="courses[${chIdx}].chapterQuiz[${qIdx}].options[${oIdx}] = this.value"
+                          class="w-full px-2 py-1 rounded bg-slate-900 border border-slate-700" />
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </details>
+        </div>
+      `).join('');
+    }
+
+    // ================= 3D ЗЕРТХАНА (THREE.JS) =================
+    let scene, camera, renderer, labGroup, currentLab = 'pendulum', labInitialized = false;
+    let labParams = { length: 3, angle: 0.6, speed: 12, projAngle: 45, inclineAngle: 25, waveFreq: 2 };
+    let simTime = 0;
+
+    function initThreeLab() {
+      if (labInitialized) return;
+      const container = document.getElementById('three-container');
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x090d16);
+
+      camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 100);
+      camera.position.set(0, 3, 10);
+      camera.lookAt(0, 0, 0);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      container.appendChild(renderer.domElement);
+
+      const light = new THREE.DirectionalLight(0xffffff, 1.2);
+      light.position.set(5, 10, 7);
+      scene.add(light);
+      scene.add(new THREE.AmbientLight(0x404060, 1.5));
+
+      const grid = new THREE.GridHelper(16, 16, 0x334155, 0x1e293b);
+      grid.position.y = -3;
+      scene.add(grid);
+
+      labGroup = new THREE.Group();
+      scene.add(labGroup);
+      labInitialized = true;
+
+      selectLab('pendulum');
+      animateLab();
+    }
+
+    function selectLab(type) {
+      currentLab = type;
+      simTime = 0;
+      document.querySelectorAll('.lab-tab').forEach(b => {
+        b.classList.remove('bg-cyan-600', 'text-white');
+        b.classList.add('bg-slate-100', 'dark:bg-slate-800');
+      });
+      const active = document.getElementById('lab-tab-' + type);
+      if (active) {
+        active.classList.add('bg-cyan-600', 'text-white');
+        active.classList.remove('bg-slate-100', 'dark:bg-slate-800');
+      }
+
+      while (labGroup.children.length) labGroup.remove(labGroup.children[0]);
+      const body = document.getElementById('lab-controls-body');
+
+      if (type === 'pendulum') {
+        const pivot = new THREE.Mesh(new THREE.BoxGeometry(2, 0.2, 0.5), new THREE.MeshStandardMaterial({ color: 0x64748b }));
+        pivot.position.y = 3;
+        const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1), new THREE.MeshStandardMaterial({ color: 0x94a3b8 }));
+        const bob = new THREE.Mesh(new THREE.SphereGeometry(0.45, 24, 24), new THREE.MeshStandardMaterial({ color: 0x38bdf8 }));
+        labGroup.add(pivot, rod, bob);
+        labGroup.userData = { rod, bob };
+
+        body.innerHTML = `
+          <div><label class="text-xs text-slate-400">Жіп ұзындығы L: <b id="val-len">${labParams.length} м</b></label>
+          <input type="range" min="1.5" max="4.5" step="0.1" value="${labParams.length}" oninput="labParams.length=+this.value; document.getElementById('val-len').textContent=this.value+' м'" class="w-full"></div>
+          <div><label class="text-xs text-slate-400">Ауытқу бұрышы: <b id="val-ang">${Math.round(labParams.angle*57.3)}°</b></label>
+          <input type="range" min="0.1" max="1.2" step="0.05" value="${labParams.angle}" oninput="labParams.angle=+this.value; document.getElementById('val-ang').textContent=Math.round(this.value*57.3)+'°'" class="w-full"></div>
+        `;
+      } else if (type === 'projectile') {
+        const ball = new THREE.Mesh(new THREE.SphereGeometry(0.35, 24, 24), new THREE.MeshStandardMaterial({ color: 0xf59e0b }));
+        labGroup.add(ball);
+        labGroup.userData = { ball };
+        body.innerHTML = `
+          <div><label class="text-xs text-slate-400">Бастапқы жылдамдық v₀: <b id="val-spd">${labParams.speed} м/с</b></label>
+          <input type="range" min="5" max="18" step="1" value="${labParams.speed}" oninput="labParams.speed=+this.value; simTime=0; document.getElementById('val-spd').textContent=this.value+' м/с'" class="w-full"></div>
+          <div><label class="text-xs text-slate-400">Лақтыру бұрышы α: <b id="val-pang">${labParams.projAngle}°</b></label>
+          <input type="range" min="15" max="75" step="5" value="${labParams.projAngle}" oninput="labParams.projAngle=+this.value; simTime=0; document.getElementById('val-pang').textContent=this.value+'°'" class="w-full"></div>
+        `;
+      } else if (type === 'incline') {
+        const ramp = new THREE.Mesh(new THREE.BoxGeometry(7, 0.2, 2), new THREE.MeshStandardMaterial({ color: 0x475569 }));
+        const block = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), new THREE.MeshStandardMaterial({ color: 0x10b981 }));
+        labGroup.add(ramp, block);
+        labGroup.userData = { ramp, block };
+        body.innerHTML = `
+          <div><label class="text-xs text-slate-400">Көлбеу бұрышы: <b id="val-inc">${labParams.inclineAngle}°</b></label>
+          <input type="range" min="10" max="45" step="1" value="${labParams.inclineAngle}" oninput="labParams.inclineAngle=+this.value; simTime=0; document.getElementById('val-inc').textContent=this.value+'°'" class="w-full"></div>
+        `;
+      } else if (type === 'wave') {
+        const spheres = [];
+        for (let x = -5; x <= 5; x += 0.6) {
+          for (let z = -3; z <= 3; z += 0.6) {
+            const s = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 12), new THREE.MeshStandardMaterial({ color: 0x818cf8 }));
+            s.position.set(x, 0, z);
+            labGroup.add(s);
+            spheres.push(s);
+          }
+        }
+        labGroup.userData = { spheres };
+        body.innerHTML = `
+          <div><label class="text-xs text-slate-400">Толқын жиілігі: <b id="val-wf">${labParams.waveFreq} Гц</b></label>
+          <input type="range" min="1" max="5" step="0.5" value="${labParams.waveFreq}" oninput="labParams.waveFreq=+this.value; document.getElementById('val-wf').textContent=this.value+' Гц'" class="w-full"></div>
+        `;
+      }
+    }
+
+    function animateLab() {
+      requestAnimationFrame(animateLab);
+      if (!labInitialized) return;
+      simTime += 0.02;
+      const hud = document.getElementById('lab-hud');
+
+      if (currentLab === 'pendulum' && labGroup.userData.bob) {
+        const omega = Math.sqrt(9.81 / labParams.length);
+        const theta = labParams.angle * Math.cos(omega * simTime);
+        const x = labParams.length * Math.sin(theta);
+        const y = 3 - labParams.length * Math.cos(theta);
+        labGroup.userData.bob.position.set(x, y, 0);
+        labGroup.userData.rod.scale.y = labParams.length;
+        labGroup.userData.rod.position.set(x / 2, (3 + y) / 2, 0);
+        labGroup.userData.rod.rotation.z = theta;
+        const T = (2 * Math.PI / omega).toFixed(2);
+        hud.textContent = `T = 2π√(L/g) = ${T} с | L = ${labParams.length} м`;
+      } else if (currentLab === 'projectile' && labGroup.userData.ball) {
+        const rad = labParams.projAngle * Math.PI / 180;
+        const vx = labParams.speed * Math.cos(rad);
+        const vy = labParams.speed * Math.sin(rad);
+        const t = simTime % 2.8;
+        const x = -6 + vx * t * 0.7;
+        const y = -2.6 + (vy * t - 0.5 * 9.81 * t * t) * 0.45;
+        labGroup.userData.ball.position.set(x, Math.max(-2.6, y), 0);
+        hud.textContent = `v₀ = ${labParams.speed} м/с | α = ${labParams.projAngle}° | g = 9.81 м/с²`;
+      } else if (currentLab === 'incline' && labGroup.userData.ramp) {
+        const rad = labParams.inclineAngle * Math.PI / 180;
+        labGroup.userData.ramp.rotation.z = -rad;
+        const a = 9.81 * Math.sin(rad);
+        const d = ((0.5 * a * (simTime % 2.2) ** 2) % 5.5) - 2.7;
+        labGroup.userData.block.rotation.z = -rad;
+        labGroup.userData.block.position.set(d * Math.cos(rad) + 0.5 * Math.sin(rad), -d * Math.sin(rad) + 0.5 * Math.cos(rad), 0);
+        hud.textContent = `Үдеу a = g·sin(α) = ${a.toFixed(2)} м/с²`;
+      } else if (currentLab === 'wave' && labGroup.userData.spheres) {
+        labGroup.userData.spheres.forEach(s => {
+          const r = Math.hypot(s.position.x, s.position.z);
+          s.position.y = 0.7 * Math.sin(r * 1.4 - simTime * labParams.waveFreq * 2);
+        });
+        hud.textContent = `Толқын жиілігі ν = ${labParams.waveFreq} Гц`;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    // Бет жүктелгенде бұрын кірген сессияны тексеру
+    window.addEventListener('DOMContentLoaded', async () => {
+      const saved = localStorage.getItem('fizikalab_user');
+      if (saved) {
+        try {
+          currentUser = JSON.parse(saved);
+          await initPlatformAfterLogin();
+        } catch (e) {
+          logout();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
